@@ -7,6 +7,8 @@ python:
 
 install:
     - pip install -r requirements.txt
+
+script: python manage.py runserver
 #     - pip install braintree coveralls mock mysqlclient
 # env:
 #   global:

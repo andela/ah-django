@@ -1,15 +1,12 @@
 language: python
 
-virtualenv:
-  system_site_packages: true
-
 python:
   - "3.7-dev"
 
 # command to install dependecies
 
-# install:
-#     - pip install -r requirements.txt
+install:
+    - pip install -r requirements.txt
 #     - pip install braintree coveralls mock mysqlclient
 # env:
 #   global:

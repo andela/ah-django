@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/malep2007/ah-django.svg?branch=master)](https://travis-ci.com/malep2007/ah-django)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 

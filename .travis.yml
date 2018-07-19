@@ -2,11 +2,11 @@ language: python
 
 virtualenv:
   system_site_packages: true
-  
+
 python:
   - "3.4"
   - "3.5"
-  - "3.7"
+  - "3.7.0"
 
 # command to install dependecies
 before_script:
@@ -29,6 +29,3 @@ service:
 before_script:
 - psql -c 'create database hc;' -U postgres
 
-script:
-  - coverage run manage.py test 
-  - COVERALLS_REPO_TOKEN="SoXOX0s49ofo0gndJ9so7o16HVkHpQ8PB" coveralls

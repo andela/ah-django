@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.com/malep2007/ah-django.svg?branch=master)](https://travis-ci.com/malep2007/ah-django)
+|Coverarge | Build |
+|----------------|:------------|
+|[![Coverage Status](https://coveralls.io/repos/github/malep2007/ah-django/badge.svg)](https://coveralls.io/github/malep2007/ah-django)|[![Build Status](https://travis-ci.com/malep2007/ah-django.svg?branch=master)](https://travis-ci.com/malep2007/ah-django)|
 
 Authors Haven - A Social platform for the creative at heart.
 =======

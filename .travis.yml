@@ -4,9 +4,7 @@ virtualenv:
   system_site_packages: true
 
 python:
-  - "3.4"
-  - "3.5"
-  - "3.7.0"
+  - "3.7"
 
 # command to install dependecies
 

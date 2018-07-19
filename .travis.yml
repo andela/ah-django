@@ -1,0 +1,34 @@
+language: python
+
+virtualenv:
+  system_site_packages: true
+  
+python:
+  - "3.4"
+  - "3.5"
+  - "3.7"
+
+# command to install dependecies
+before_script:
+    - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+    - chmod +x ./cc-test-reporter 
+install:
+    - pip install -r requirements.txt
+    - pip install braintree coveralls mock mysqlclient
+env:
+  global:
+    - GIT_COMMITTED_AT=$(if [ "$TRAVIS_PULL_REQUEST" == "false" ]; then git log -1 --pretty=format:%ct; else git log -1 --skip 1 --pretty=format:%ct; fi)
+    - CODECLIMATE_REPO_TOKEN = "SoXOX0s49ofo0gndJ9so7o16HVkHpQ8PB"
+    - CC_TEST_REPORTER_ID="56c0420c0cb2cd4e93d4f916917e97c77cdf82df594b1dfd84380e6634ca6785"
+    - DB=postgres
+
+addons:
+  postgresql: "9.4"
+service:
+    - redis-server
+before_script:
+- psql -c 'create database hc;' -U postgres
+
+script:
+  - coverage run manage.py test 
+  - COVERALLS_REPO_TOKEN="SoXOX0s49ofo0gndJ9so7o16HVkHpQ8PB" coveralls

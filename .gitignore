@@ -83,6 +83,10 @@ celerybeat-schedule
 venv/
 ENV/
 
+# pipenv
+Pipfile
+Pipfile.lock
+
 # Spyder project settings
 .spyderproject
 
@@ -91,3 +95,6 @@ ENV/
 
 # SQLite3
 db.sqlite3
+
+# VSCODE
+.vscode/

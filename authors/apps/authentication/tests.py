@@ -1,3 +1,5 @@
+from base64 import b64encode
+
 from django.test import TestCase
 from rest_framework import status
 from rest_framework.test import APIClient
@@ -12,22 +14,20 @@ class UserTestCase(TestCase):
         self.username = "henryjones"
         self.email = "hjones@email.com"
         self.password = "T35ting-i2E"
-        self.user = User(username=self.username, email=self.email, password=self.password)
+        self.user = User(
+            username=self.username, 
+            email=self.email, 
+            password=self.password)
 
     def test_model_can_create_a_user(self):
-        fields = [
-            self.username,
-            self.email,
-            self.password]
 
         previous_count = User.objects.count()
         self.user.save()
         current_count = User.objects.count()
 
         self.assertNotEqual(previous_count, current_count)
-        self.assertIn(self.user.username, fields)
-        self.assertIn(self.user.email, fields)
-        self.assertIn(self.user.password, fields)
+        self.assertEqual(str(self.user), self.email)
+    
     
     def test_model_returns_fullname_of_user(self):
         self.user.save()
@@ -80,7 +80,7 @@ class  UserManagerTestCase(TestCase):
         kwargs = {
             "username": self.username,
             "password": self.password}
-
+        
         self.assertRaises(TypeError, User.objects.create_user, **kwargs)
     
     def test_manager_can_create_a_super_user_with_required_fields(self):
@@ -246,4 +246,61 @@ class LoginAPIViewTestCase(TestCase):
 
 class UserRetrieveUpdateAPIViewTestCase(TestCase):
     """ This class defines the test suite for the view that retrieves and updates a user """
-    pass
+    
+    def setUp(self):
+
+        self.existing_user_data= {
+            "username": "janejones",
+            "email": "jjones@email.com",
+            "password": "Enter-123"}
+
+        self.existing_user = User.objects.create_user(**self.existing_user_data)
+        self.client = APIClient()
+        self.client.login(username="jjones@email.com", password="Enter-123")
+    
+    def test_api_can_retrieve_a_registered_user(self):
+
+        response = self.client.get(
+            '/api/user',
+            format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK) 
+
+    def test_api_needs_authentication_to_retrieve_a_user(self):
+
+        self.client.logout()
+
+        response = self.client.get(
+            '/api/user',
+            format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN) 
+
+    def test_api_can_update_user_data(self):
+
+        new_user_data = {
+            "email": "jjones@email.com",
+            "bio": "I like eggs for breakfast",
+            "image": "https://myimages.com/erwt.png"}
+
+        response = self.client.put(
+            '/api/user',
+            {"user": new_user_data},
+            format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK) 
+
+    def test_api_needs_authentication_to_update_user_data(self):
+        new_user_data = {
+            "email": "jjones@email.com",
+            "bio": "I like eggs for breakfast",
+            "image": "https://myimages.com/erwt.png"}
+
+        self.client.logout()
+        
+        response = self.client.put(
+            '/api/user',
+            {"user": new_user_data},
+            format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN) 

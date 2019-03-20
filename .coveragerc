@@ -1,0 +1,8 @@
+[report]
+show_missing = True
+omit = 
+    *__init__.py
+    */migrations/*
+    */urls.py
+    */settings.py
+    */wsgi.py

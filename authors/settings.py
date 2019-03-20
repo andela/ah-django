@@ -149,7 +149,7 @@ TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 # Tell nose on which apps to measure coverage
 NOSE_ARGS = [
         '--with-coverage',
-        '--cover-package=authors.apps',
+        '--cover-package=authors',
         '--cover-erase',
         '--cover-inclusive',
 ]

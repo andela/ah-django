@@ -126,8 +126,8 @@ class RegistrationTestCase(APITestCase):
         self.assertEqual(
             json.loads(login_user.content),
             {"errors":
-             {"error":
-              ['A user with this email and password was not found.']}})
+             {"email":
+              ['Enter a valid email address.']}})
 
     def test_user_login_unregistered_user(self):
         """

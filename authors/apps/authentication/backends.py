@@ -8,3 +8,9 @@
 
 """Configure JWT Here"""
 
+
+class JWTAuthentication(object):
+    """docstring for JWTAuthemtication"""
+
+    def __init__(self):
+        pass

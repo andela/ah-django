@@ -163,3 +163,13 @@ class RegistrationTestCase(APITestCase):
                          {"errors":
                           {"email":
                            ['Enter a valid email address.']}})
+
+    def test_getting_token_after_signup(self):
+        """
+        test a normal user will get a token upon signup
+        """
+        register_new_user = self.client.post(
+            "/api/users", self.user_1, format="json")
+        self.assertEqual(register_new_user.status_code,
+                         status.HTTP_201_CREATED)
+        self.assertIn('token', json.loads(register_new_user.content)["user"])

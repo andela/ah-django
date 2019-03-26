@@ -1,6 +1,8 @@
 Authors Haven - A Social platform for the creative at heart.
 =======
 
+[![Build Status](https://travis-ci.com/rfpremier/ah-django.svg?branch=develop)](https://travis-ci.com/rfpremier/ah-django)
+
 ## Vision
 Create a community of like minded authors to foster inspiration and innovation
 by leveraging the modern web.

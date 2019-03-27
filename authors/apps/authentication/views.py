@@ -34,6 +34,8 @@ class RegistrationAPIView(APIView):
         JWT_payload = {'email':serializer.data.get("email")}
         ############### This line generates the token ######################
         JWT_token = jwt.encode(JWT_payload, settings.SECRET_KEY,algorithm='HS256').decode()
+
+        # Include token in the response
         newdict =  {'token':JWT_token}
         newdict.update(serializer.data)
         return Response(newdict, status=status.HTTP_201_CREATED)

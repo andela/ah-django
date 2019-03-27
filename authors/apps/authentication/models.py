@@ -2,6 +2,8 @@ import jwt
 
 from datetime import datetime, timedelta
 
+########### Import JWTokens from the backends file ###########
+from .backends import JWTokens
 from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -28,8 +30,14 @@ class UserManager(BaseUserManager):
 
         user = self.model(username=username, email=self.normalize_email(email))
         user.set_password(password)
+        
+        ########### Having saved the user details, we use the information to generate the tokens ###########
+        ######## This token will however not be saved in the database. #############
+        
+        user.token = JWTokens.generate_token(self, user)
         user.save()
-
+        print('me')
+        print(user)
         return user
 
     def create_superuser(self, username, email, password):
@@ -81,7 +89,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     # A timestamp reprensenting when this object was last updated.
     updated_at = models.DateTimeField(auto_now=True)
 
-    # More fields required by Django when specifying a custom user model.
+    ######### More fields required by Django when specifying a custom user model.#########
+    bio = models.CharField(max_length=255)
+    photo = models.ImageField(upload_to='uploads', blank=True)
+
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.
     # In this case, we want that to be the email field.

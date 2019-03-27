@@ -143,3 +143,27 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(max_length=255)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+    )
+
+    confirm_password = serializers.CharField(
+        max_length=128,
+        min_length=8,
+    )
+
+    # Validate password with regex to ensure it has mixed characters
+    def validate_password(self, data):
+        if not re.match(
+            r'^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).*',
+                data):
+            raise serializers.ValidationError(
+                "Password must have letters, numbers and special characters")

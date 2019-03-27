@@ -1,0 +1,20 @@
+{% load inlinecss %}
+{% inlinecss 'css/style.css' %}
+<html lang="en">
+<body>
+    <header>
+        <h2>Authors Haven Team</h2>
+    </header>
+    <div class="card">
+        <div class="email-content">
+            {% block content %}
+            {% endblock %}
+        </div>
+    </div>
+    <footer>
+        <h4>Hey buddy! You have received this mail from Authors Haven</h4>
+    </footer>
+</body>
+
+</html>
+{% endinlinecss %}

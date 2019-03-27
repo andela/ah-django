@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework import generics
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
@@ -8,6 +9,8 @@ from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer
 )
+
+from . import mailer
 
 
 class RegistrationAPIView(APIView):
@@ -73,3 +76,19 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class ResetPassword(generics.GenericAPIView):
+
+    def post(self, request):
+        res = mailer.RecoverPassword().send_email()
+
+        email = request.data.get("email", "")
+
+        response = {
+            "status": res.status_code,
+            "body": res.body,
+            "header": res.headers,
+            "email": email
+        }
+
+        return Response(status=status.HTTP_202_ACCEPTED, data=response)

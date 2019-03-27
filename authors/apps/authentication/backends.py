@@ -8,66 +8,45 @@
     Authorization: token yourtokenhere
 """
 import jwt
-
 from django.conf import settings
-from django.http import HttpResponse
-from rest_framework import authentication, exceptions
-from rest_framework import status
-
+from rest_framework import authentication
+from rest_framework.exceptions import AuthenticationFailed
 from .models import User
 
 
 class JWTAuthentication(authentication.BaseAuthentication):
+
     def authenticate(self, request):
         """
             This method checks if the token is valid
-
+            the return value is the users token
         """
+
         auth = authentication.get_authorization_header(request).split()
+
+        # Ensure we have a token
         # get_authorization_header returns headers as bytesstring
         # hence the need to check
         # against b'token'
-        if not auth or auth[0].lower() != b'token':
+
+        if not auth or auth[0].lower() != b'bearer':
             return None
-
-        if len(auth) != 2:
-            message = "Token header is invalid"
-            raise exceptions.AuthenticationFailed(message)
-
         try:
             token = auth[1]
 
         except UnicodeError:
             message = "Token contains invalid characters"
-            raise exceptions.AuthenticationFailed(message)
-
-        # once all the above checks have passed its now time
-        # to check if the token belongs to an actual user
-        # by decoding it and checking against the email address
-        return self.authenticate_credentials(token)
-
-        def authenticate_credentials(self, token):
-            """
-                checks if the token belongs to a valid user.
-            """
-        # we use the same key for encoding as well
-        payload = jwt.decode(token, settings.SECRET_KEY)
-        email = payload['email']
+            raise AuthenticationFailed(message)
+        # Attempt decoding the token
         try:
-            user = User.objects.get(
-                email=email,
-                is_active=True
-            )
-            if not user:
-                message = "User does not exist"
-                raise exceptions.AuthenticationFailed(message)
-        except jwt.DecodeError or jwt.InvalidTokenError:
-            return HttpResponse(
-                {'Error': "Token is invalid"},
-                status=status.HTTP_403_FORBIDDEN)
-        except jwt.ExpiredSignature:
-            return HttpResponse(
-                {'Error': "The token has expired, Kindly generate a new one"},
-                status=status.HTTP_403_FORBIDDEN)
+            payload = jwt.decode(token, settings.SECRET_KEY)
+        except:
+            raise AuthenticationFailed('Invalid token.')
 
-        return user, token
+        # Get the user owning the token by the decoded email prop
+        try:
+            user = User.objects.get(email=payload['email'])
+        except User.DoesNotExist:
+            raise AuthenticationFailed('No user found for token provided')
+
+        return (user, token)

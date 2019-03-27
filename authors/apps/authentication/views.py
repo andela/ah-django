@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer, PasswordResetSerializer
 )
 
 from . import mailer
@@ -78,17 +78,22 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
 
 class ResetPassword(generics.GenericAPIView):
+    serializer_class = PasswordResetSerializer
 
     def post(self, request):
         res = mailer.RecoverPassword().send_email()
 
-        email = request.data.get("email", "")
+        email = request.data.get('email', {})
+        serializer = self.serializer_class(
+            data=email
+        )
+
+        serializer.is_valid(raise_exception=True)
 
         response = {
             "status": res.status_code,
             "body": res.body,
-            "header": res.headers,
-            "email": email
+            "header": res.headers
         }
 
-        return Response(status=status.HTTP_202_ACCEPTED, data=response)
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)

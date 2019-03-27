@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'djoser',
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -81,13 +82,14 @@ WSGI_APPLICATION = 'authors.wsgi.application'
 # https://docs.djangoproject.com/en/1.11/ref/settings/#databases
 
 DATABASES = {
-     'default': {
-        'ENGINE' : 'django.db.backends.postgresql_psycopg2',
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
     }
 }
 
 # Parse database url to get all required information for connection
-DATABASES['default'] = dj_database_url.config(default=os.environ['DATABASE_URL'])
+DATABASES['default'] = dj_database_url.config(
+    default=os.environ['DATABASE_URL'])
 DATABASES['default'] = dj_database_url.parse(os.environ['DATABASE_URL'])
 
 # Password validation
@@ -144,4 +146,13 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
+}
+
+FROM_EMAIL = 'misochobrian@gmail.com'
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': ('{protocol}//:{domain}/'
+                                   'api/password-reset-confirm/?uid={uid}&token={token}'),
+    'SET_PASSWORD_RETYPE': True,
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
 }

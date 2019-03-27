@@ -1,16 +1,25 @@
-from rest_framework import status
-from rest_framework import generics
+from django.contrib.auth.tokens import default_token_generator
+
+
+from rest_framework import generics, permissions, status, views
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+
+from djoser import utils, signals
+from djoser.compat import get_user_email, get_user_email_field_name
+from djoser.conf import settings
+
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer, PasswordResetSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer,
+    PasswordResetSerializer
 )
 
 from . import mailer
+from .models import User
 
 
 class RegistrationAPIView(APIView):
@@ -80,20 +89,95 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 class ResetPassword(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
 
-    def post(self, request):
-        res = mailer.RecoverPassword().send_email()
+    _users = None
 
-        email = request.data.get('email', {})
+    def post(self, request):
+
+        email = request.data.get('user', {})
         serializer = self.serializer_class(
             data=email
         )
 
         serializer.is_valid(raise_exception=True)
 
-        response = {
-            "status": res.status_code,
-            "body": res.body,
-            "header": res.headers
+        email = serializer.data['email']
+
+        user = self.get_user(email)
+
+        if not user:
+            response = {
+                "status": "400",
+                "error": "Email address does not exist"
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        res = self.send_reset_password_email(user[0])
+        msg = "Check email to reset password"
+        data = self.get_user_data(user[0])
+        token = data['token']
+        uid = data['uid']
+
+        if res.status_code == 202:
+            response = {
+                "status": 200,
+                "token": token,
+                "uid": uid,
+                "message": msg
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+    def get_user(self, email):
+        if self._users is None:
+            email_field_name = get_user_email_field_name(User)
+            users = User.objects.filter(
+                **{email_field_name + '__iexact': email})
+            self._users = [
+                u for u in users if u.is_active and u.has_usable_password()
+            ]
+        return self._users
+
+    def send_reset_password_email(self, user):
+        context = {'user': user}
+        recepient = get_user_email(user)
+        data = self.get_user_data(recepient)
+
+        return mailer.RecoverPassword(self.request,
+                                      context, recepient, data).send_email()
+
+    def get_user_data(self, email):
+        user = User.objects.get(email=email).username
+        user_object = User.objects.get(email=email)
+        uid = User.objects.get(email=email).id
+        token = default_token_generator.make_token(user_object)
+
+        data = {
+            "user": user,
+            "uid": uid,
+            "token": token
         }
 
-        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        return data
+
+
+class ResetPasswordConfirmView(generics.UpdateAPIView):
+    """
+    patch:
+    Confirming a user's reset password.
+    """
+    permission_classes = [permissions.AllowAny]
+    token_generator = default_token_generator
+
+    def partial_update(self, request, pk=None):
+        uid = self.request.query_params.get('uid')
+        serializer = User.objects.get(id=uid)
+
+        if request.data['new_password'] != request.data['re_new_password']:
+            return Response({
+                'error': 'Ensure both passwords match.',
+                'status': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.set_password(request.data['new_password'])
+        serializer.save()
+        return Response(status=status.HTTP_200_OK,
+                        data={'message': 'Password reset successfully.', 'status': 200})

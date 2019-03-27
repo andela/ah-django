@@ -34,10 +34,7 @@ class LoginSerializer(serializers.Serializer):
     email = serializers.CharField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
-<<<<<<< Updated upstream
     token = serializers.CharField(max_length=255, read_only=True)
-=======
->>>>>>> Stashed changes
 
     def validate(self, data):
         # The `validate` method is where we make sure that the current
@@ -154,10 +151,10 @@ class PasswordResetSerializer(serializers.Serializer):
 
         email = data.get('email', None)
 
-        if email is None:
-            raise serializers.ValidationError(
-                'Please provide an email address'
-            )
+        if not email:
+            return {
+                "error": "Email does not exist"
+            }
 
         return {
             'email': email

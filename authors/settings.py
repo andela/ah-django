@@ -141,3 +141,15 @@ REST_FRAMEWORK = {
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
+
+# EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.environ.get('EMAIL_HOST')
+EMAIL_PORT = os.environ.get('EMAIL_PORT') or 587
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_USE_TLS = True
+
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
+SENDGRID_ECHO_TO_STDOUT = True

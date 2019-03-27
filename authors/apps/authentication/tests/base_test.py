@@ -21,7 +21,7 @@ class BaseTestCase(APITestCase):
         self.registration_path = reverse('authentication:activation')
         self.factory = RequestFactory()
 
-        self.user_to_register = {
+        self.user_registration = {
             'user': {
                 'username': 'author',
                 'email': 'author@haven.com',

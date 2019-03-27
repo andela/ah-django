@@ -26,7 +26,30 @@ class RegistrationAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        mail_helper(request=request)
+        activation_link = mail_helper.get_link(
+            path='activate',
+            token=serializer.data.get('token'))
+
+        mail_helper.send_mail(
+            subject='Activate Account',
+            to_addrs=[serializer.data.get('email')],
+            multiple_alternatives=True,
+            template_name='user_account_activation.html',
+            template_values={
+                'username': serializer.data.get('username'),
+                'activation_link': activation_link
+            }
+        )
+        res_message = {"message": "User account created." +
+                       " An activation link has been sent to your email"
+                       }
+        serializer.data.pop('token', '')
+        res_message.update(serializer.data)
+
+        return Response(
+            data=res_message,
+            status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):

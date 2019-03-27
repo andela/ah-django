@@ -1,1 +1,1 @@
-web: gunicorn ah-django.wsgi
+web: gunicorn authors.wsgi

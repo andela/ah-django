@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.com/deferral/ah-django.svg?branch=develop)](https://travis-ci.com/deferral/ah-django)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 

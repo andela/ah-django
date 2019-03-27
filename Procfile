@@ -1,1 +1,1 @@
-web: gunicorn docs:app
+web: gunicorn djangorest.wsgi

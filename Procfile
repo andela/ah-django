@@ -1,1 +1,1 @@
-web: gunicorn djangorest.wsgi
+web: gunicorn ah-django.wsgi

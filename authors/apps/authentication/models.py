@@ -117,3 +117,21 @@ class User(AbstractBaseUser, PermissionsMixin):
         the user's real name, we return their username instead.
         """
         return self.username
+
+    @property
+    def token(self):
+        """
+        This method will generate a token
+        we can let the token expire after a day of being
+        generated
+        """
+        date = datetime.now() + timedelta(hours=24)
+
+        payload = {
+            'email': self.email,
+            'exp': int(date.strftime('%s')),
+        }
+        token = jwt.encode(
+            payload,
+            settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
+        return token

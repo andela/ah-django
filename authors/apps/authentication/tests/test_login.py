@@ -63,6 +63,7 @@ class RegistrationTestCase(APITestCase):
             "/api/users/login/", self.user1_login, format="json")
         self.assertEqual(login_user.status_code,
                          status.HTTP_200_OK)
+
         self.assertIn('username', login_user.data)
         self.assertIn('email', login_user.data)
 
@@ -143,3 +144,15 @@ class RegistrationTestCase(APITestCase):
             {'errors':
              {'error':
               ['A user with this email and password was not found.']}})
+
+    def test_getting_a_token_upon_login(self):
+        """
+        test that a normal user can login and get a token
+        """
+        self.signup()
+        login_user = self.client.post(
+            "/api/users/login/", self.user1_login, format="json")
+        self.assertEqual(login_user.status_code,
+                         status.HTTP_200_OK)
+
+        self.assertIn('token', json.loads(login_user.content)["user"])

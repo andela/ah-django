@@ -60,6 +60,13 @@ class RegistrationTestCase(APITestCase):
                 "password": "premiermember2019"
             }
         }
+        self.invalid_password = {
+            "user": {
+                "email": "premiermember2@gmail.com",
+                "username": "premier member",
+                "password": "2019*!//]"
+            }
+        }
 
     def test_normal_user_registration(self):
         """
@@ -164,6 +171,19 @@ class RegistrationTestCase(APITestCase):
                           {"email":
                            ['Enter a valid email address.']}})
 
+    def test_user_registration_with_invalid_password(self):
+        """
+        test user registering into the app with an invalid password
+        """
+        register_new_user = self.client.post(
+            "/api/users", self.invalid_password, format="json")
+        self.assertEqual(register_new_user.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(json.loads(register_new_user.content),
+                         {"errors":
+                          {"password":
+                           ["Ensure this field only has alphanumerics."]}})
+        
     def test_getting_token_after_signup(self):
         """
         test a normal user will get a token upon signup

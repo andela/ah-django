@@ -71,3 +71,14 @@ class JWTAuthentication(authentication.BaseAuthentication):
                 status=status.HTTP_403_FORBIDDEN)
 
         return user, token
+
+    def validate_token(self, token):
+        # we use the same key for encoding as well
+
+        try:
+            jwt.decode(token, settings.SECRET_KEY)
+        except jwt.DecodeError or jwt.InvalidTokenError:
+            return False
+        except jwt.ExpiredSignature:
+            return False
+        return True

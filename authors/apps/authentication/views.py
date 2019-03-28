@@ -1,16 +1,13 @@
-from django.contrib.auth.tokens import default_token_generator
+from .backends import JWTAuthentication as auth
 
 
-from rest_framework import generics, permissions, status, views
+from rest_framework import generics, status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-
-from djoser import utils, signals
 from djoser.compat import get_user_email, get_user_email_field_name
-from djoser.conf import settings
 
 from .renderers import UserJSONRenderer
 from .serializers import (
@@ -148,7 +145,7 @@ class ResetPassword(generics.GenericAPIView):
         user = User.objects.get(email=email).username
         user_object = User.objects.get(email=email)
         uid = User.objects.get(email=email).id
-        token = default_token_generator.make_token(user_object)
+        token = user_object.token
 
         data = {
             "user": user,
@@ -164,12 +161,22 @@ class ResetPasswordConfirmView(generics.UpdateAPIView):
     patch:
     Confirming a user's reset password.
     """
-    permission_classes = [permissions.AllowAny]
-    token_generator = default_token_generator
 
     def partial_update(self, request, pk=None):
         uid = self.request.query_params.get('uid')
-        serializer = User.objects.get(id=uid)
+        token = self.request.query_params.get('token')
+        if not auth().validate_token(token):
+            return Response({
+                'error': 'Invalid token',
+                'status': 403
+            }, status=status.HTTP_403_FORBIDDEN)
+        try:
+            serializer = User.objects.get(id=uid)
+        except User.DoesNotExist:
+            return Response({
+                'error': 'User does not exist',
+                'status': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
 
         if request.data['new_password'] != request.data['re_new_password']:
             return Response({
@@ -180,4 +187,5 @@ class ResetPasswordConfirmView(generics.UpdateAPIView):
         serializer.set_password(request.data['new_password'])
         serializer.save()
         return Response(status=status.HTTP_200_OK,
-                        data={'message': 'Password reset successfully.', 'status': 200})
+                        data={'message': 'Password reset successfully.',
+                              'status': 200})

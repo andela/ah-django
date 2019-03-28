@@ -152,7 +152,8 @@ FROM_EMAIL = 'misochobrian@gmail.com'
 
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': ('{protocol}//:{domain}/'
-                                   'api/password-reset-confirm/?uid={uid}&token={token}'),
+                                   'api/password-reset-confirm/'
+                                   '/?uid={uid}&token={token}'),
     'SET_PASSWORD_RETYPE': True,
     'PASSWORD_RESET_CONFIRM_RETYPE': True,
 }

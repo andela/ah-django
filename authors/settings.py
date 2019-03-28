@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'rest_framework',
+    'djoser',
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -148,4 +149,16 @@ REST_FRAMEWORK = {
     ),
 }
 
+
+FROM_EMAIL = 'misochobrian@gmail.com'
+
+DJOSER = {
+    'PASSWORD_RESET_CONFIRM_URL': ('{protocol}//:{domain}/'
+                                   'api/users/password-reset-confirm/'
+                                   '?uid={uid}&token={token}'),
+    'SET_PASSWORD_RETYPE': True,
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
+}
+
 django_heroku.settings(locals())
+

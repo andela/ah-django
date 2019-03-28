@@ -1,14 +1,27 @@
+from .backends import JWTAuthentication as auth
+
+
+from rest_framework import generics, status
+from rest_framework.generics import RetrieveUpdateAPIView
+
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import User
 
+from djoser.compat import get_user_email, get_user_email_field_name
+
 from .renderers import UserJSONRenderer
 from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
+    LoginSerializer, RegistrationSerializer, UserSerializer,
+    PasswordResetSerializer
 )
+
+from . import mailer
+from .models import User
 
 
 class RegistrationAPIView(APIView):
@@ -74,6 +87,112 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class ResetPassword(generics.GenericAPIView):
+    serializer_class = PasswordResetSerializer
+
+    _users = None
+
+    def post(self, request):
+
+        email = request.data.get('user', {})
+        serializer = self.serializer_class(
+            data=email
+        )
+
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.data['email']
+
+        user = self.get_user(email)
+
+        if not user:
+            response = {
+                "status": "400",
+                "error": "Email address does not exist"
+            }
+            return Response(response, status=status.HTTP_400_BAD_REQUEST)
+
+        res = self.send_reset_password_email(user[0])
+        msg = "Check email to reset password"
+        data = self.get_user_data(user[0])
+        token = data['token']
+        uid = data['uid']
+
+        if res.status_code == 202:
+            response = {
+                "status": 200,
+                "token": token,
+                "uid": uid,
+                "message": msg
+            }
+            return Response(response, status=status.HTTP_200_OK)
+
+    def get_user(self, email):
+        if self._users is None:
+            email_field_name = get_user_email_field_name(User)
+            users = User.objects.filter(
+                **{email_field_name + '__iexact': email})
+            self._users = [
+                u for u in users if u.is_active and u.has_usable_password()
+            ]
+        return self._users
+
+    def send_reset_password_email(self, user):
+        context = {'user': user}
+        recepient = get_user_email(user)
+        data = self.get_user_data(recepient)
+
+        return mailer.RecoverPassword(self.request,
+                                      context, recepient, data).send_email()
+
+    def get_user_data(self, email):
+        user = User.objects.get(email=email).username
+        user_object = User.objects.get(email=email)
+        uid = User.objects.get(email=email).id
+        token = user_object.token
+
+        data = {
+            "user": user,
+            "uid": uid,
+            "token": token
+        }
+
+        return data
+
+
+class ResetPasswordConfirmView(generics.UpdateAPIView):
+    """
+    patch:
+    Confirming a user's reset password.
+    """
+
+    def partial_update(self, request, pk=None):
+        uid = self.request.query_params.get('uid')
+        token = self.request.query_params.get('token')
+        if not auth().validate_token(token):
+            return Response({
+                'error': 'Invalid token',
+                'status': 403
+            }, status=status.HTTP_403_FORBIDDEN)
+        try:
+            serializer = User.objects.get(id=uid)
+        except User.DoesNotExist:
+            return Response({
+                'error': 'User does not exist',
+                'status': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if request.data['new_password'] != request.data['re_new_password']:
+            return Response({
+                'error': 'Ensure both passwords match.',
+                'status': 400
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer.set_password(request.data['new_password'])
+        serializer.save()
+        return Response(status=status.HTTP_200_OK,
+                        data={'message': 'Password reset successfully.',
+                              'status': 200})
 
 class UserListApiView(ListAPIView):
     permission_classes = (IsAuthenticated,)
@@ -85,3 +204,4 @@ class UserListApiView(ListAPIView):
         serializer = UserSerializer(
             queryset, many=True, context={'request': request})
         return Response(serializer.data)
+

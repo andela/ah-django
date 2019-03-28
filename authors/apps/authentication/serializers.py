@@ -147,3 +147,20 @@ class UserSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+
+
+class PasswordResetSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+
+    def validate(self, data):
+
+        email = data.get('email', None)
+
+        if not email:
+            return {
+                "error": "Email does not exist"
+            }
+
+        return {
+            'email': email
+        }

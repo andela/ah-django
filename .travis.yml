@@ -14,7 +14,7 @@ before_script:
   - export DATABASE_URL="postgresql://postgres:pass@localhost/testauthor"
   - python manage.py makemigrations
   - python manage.py migrate
-
+  - export SENDGRID_API_KEY='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'
 services:
   - postgresql
 

@@ -50,10 +50,21 @@ class RecoverPassword:
         from_email = Email(settings.FROM_EMAIL)
         to_email = Email(self.email)
         context = self.get_context_data()
-        message = dj_settings.PASSWORD_RESET_CONFIRM_URL.format(**context)
-        subject = "Reset password {}".format(context['user'])
+        reset_link = dj_settings.PASSWORD_RESET_CONFIRM_URL.format(**context)
+        user = context['user']
+        html_mss = """
+            <p>Hi {username},</p>
+            <p>Someone (hopefully you) has requested to reset your Authors Haven.
+            Follow the link below to reset your password:<p>
+            <p>{reset_link}</p>
+            <p>If you do not wish to reset your password, disregard this message and 
+            no action will be taken</p>
+            <p>Regards,</p>
+            <p>Authors Haven team</p>
+        """.format(username=user, reset_link=reset_link)
+        subject = "Reset password your Authors Haven password".format()
         content = Content(
-            "text/plain", message)
+            "text/html", html_mss)
         mail = Mail(from_email, subject, to_email, content)
         response = sg.client.mail.send.post(request_body=mail.get())
         return response

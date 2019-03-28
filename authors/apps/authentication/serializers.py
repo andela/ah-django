@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate
+from django.core.validators import RegexValidator
 
 from rest_framework import serializers
 
@@ -9,11 +10,15 @@ class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
 
     # Ensure passwords are at least 8 characters long, no longer than 128
-    # characters, and can not be read by the client.
+    # characters with only alphanumeric characters,
+    #  and can not be read by the client.
+    alphanumeric = RegexValidator(r'^[0-9a-zA-Z]*$',
+                                  'Ensure this field only has alphanumerics.')
     password = serializers.CharField(
         max_length=128,
         min_length=8,
-        write_only=True
+        write_only=True,
+        validators=[alphanumeric]
     )
 
     # The client should not be able to send a token along with a registration
@@ -31,7 +36,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=255)
+    email = serializers.EmailField(max_length=255)
     username = serializers.CharField(max_length=255, read_only=True)
     password = serializers.CharField(max_length=128, write_only=True)
     token = serializers.CharField(max_length=255, read_only=True)

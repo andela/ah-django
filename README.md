@@ -1,4 +1,5 @@
 [![Coverage Status](https://coveralls.io/repos/github/deferral/ah-django/badge.svg?branch=develop)](https://coveralls.io/github/deferral/ah-django?branch=develop)
+[![Build Status](https://travis-ci.com/deferral/ah-django.svg?branch=develop)](https://travis-ci.com/deferral/ah-django)
 
 Authors Haven - A Social platform for the creative at heart.
 =======

@@ -1,11 +1,12 @@
 language: python
 python:
   - "3.6"
-  - "3.7-dev" 
+  - "3.7-dev"
 
 # command to install dependencies
 install:
   - pip install -r requirements.txt
+  - pip install coveralls
 
 before_script:
   - psql -c "CREATE DATABASE testauthor;" -U postgres
@@ -18,4 +19,9 @@ services:
   - postgresql
 
 script:
-  - python manage.py test
+  - coverage run --source=authors manage.py test # will run the tests and give back coverage analysis in the .coverage file
+  - coverage report
+  - coveralls
+
+after-success:
+  - coveralls

@@ -3,9 +3,14 @@ from .backends import JWTAuthentication as auth
 
 from rest_framework import generics, status
 from rest_framework.generics import RetrieveUpdateAPIView
+
+from rest_framework import status
+from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .models import User
 
 from djoser.compat import get_user_email, get_user_email_field_name
 
@@ -81,7 +86,6 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 class ResetPassword(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
@@ -189,3 +193,15 @@ class ResetPasswordConfirmView(generics.UpdateAPIView):
         return Response(status=status.HTTP_200_OK,
                         data={'message': 'Password reset successfully.',
                               'status': 200})
+
+class UserListApiView(ListAPIView):
+    permission_classes = (IsAuthenticated,)
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+    def list(self, request):
+        queryset = self.get_queryset()
+        serializer = UserSerializer(
+            queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+

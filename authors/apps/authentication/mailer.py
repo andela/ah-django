@@ -54,10 +54,12 @@ class RecoverPassword:
         user = context['user']
         html_mss = """
             <p>Hi {username},</p>
-            <p>Someone (hopefully you) has requested to reset your Authors Haven.
+            <p>Someone (hopefully you) has requested to reset your 
+            Authors Haven Password.
             Follow the link below to reset your password:<p>
             <p>{reset_link}</p>
-            <p>If you do not wish to reset your password, disregard this message and 
+            <p>If you do not wish to reset your password, disregard this 
+            message and
             no action will be taken</p>
             <p>Regards,</p>
             <p>Authors Haven team</p>

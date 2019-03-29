@@ -31,8 +31,8 @@ class RegistrationAPIView(APIView):
         # We will use the email for encoding our token
         JWT_payload = {'email': serializer.data.get("email")}
         # This line generates the token
-        JWT_token = jwt.encode(
-            JWT_payload, settings.SECRET_KEY, algorithm='HS256').decode()
+        JWT_token = jwt.encode(JWT_payload, settings.SECRET_KEY,
+                               algorithm='HS256').decode()
 
         # Include token in the response
         newdict = {'token': JWT_token}
@@ -83,4 +83,3 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-

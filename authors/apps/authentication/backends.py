@@ -15,7 +15,6 @@ class JWTokens(object):
         2. A payload-any data that you want to include into JWT
         3. A signature-an encrypted string
         """
-
         # Get the payload and encoding details from the settings
         payload = api_settings.JWT_PAYLOAD_HANDLER
         encoder = api_settings.JWT_ENCODE_HANDLER

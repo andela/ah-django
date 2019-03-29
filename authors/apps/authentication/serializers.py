@@ -1,9 +1,6 @@
 from django.contrib.auth import authenticate
-
 from rest_framework import serializers
-
 from .models import User
-
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """Serializers registration requests and creates a new user."""
@@ -18,16 +15,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
+    token = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
-        fields = ['email', 'username', 'password']
+        # Include all needed fields
+        fields = (
+            "username", "email", "bio", "photo", "password", "token"
+        )
 
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
-        return User.objects.create_user(**validated_data)
+        return User.objects.create(**validated_data)
 
 
 class LoginSerializer(serializers.Serializer):

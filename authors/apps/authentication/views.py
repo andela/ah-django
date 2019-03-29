@@ -3,6 +3,9 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.conf import settings
+
+import jwt
 
 from .renderers import UserJSONRenderer
 from .serializers import (
@@ -18,7 +21,6 @@ class RegistrationAPIView(APIView):
 
     def post(self, request):
         user = request.data.get('user', {})
-
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
@@ -26,7 +28,16 @@ class RegistrationAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # We will use the email for encoding our token
+        JWT_payload = {'email': serializer.data.get("email")}
+        # This line generates the token
+        JWT_token = jwt.encode(
+            JWT_payload, settings.SECRET_KEY, algorithm='HS256').decode()
+
+        # Include token in the response
+        newdict = {'token': JWT_token}
+        newdict.update(serializer.data)
+        return Response(newdict, status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):

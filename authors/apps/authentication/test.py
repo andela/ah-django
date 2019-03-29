@@ -13,70 +13,57 @@ class UserSignupTest(APITestCase):
         # We define the URL for user sign up
         self.user_signup_url = reverse("authentication:signup")
 
-    def test_new_user_login(self):
+    def test_create_user(self):
         """
         We test whether we can create a new user
         """
-
         user_details = {
-                "user": {
-                        "username": "yhghytfgh",
-                        "email": "gdttyfdg@gmail.com",
-                        "bio": "I am he",
-                        "password": "mather@12345"
-                        }
-                    }
-        response = self.client.post(
-            self.user_signup_url,
-            user_details, format='json'
-        )
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_201_CREATED
-        )
-        self.assertEqual(response.data['email'], user_details['user']['email'])
+            "user": {
+                "username": "yhghytfgh",
+                "email": "gdttyfdg@gmail.com",
+                "bio": "I am he",
+                "password": "mather@12345"
+            }
+        }
+        response = self.client.post(self.user_signup_url,
+                                    user_details, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_user_signin_with_missing_fields(self):
         user_details = {
-                "user": {
-                        "username": "mather",
-                        "email": "",
-                        "bio": "I am he",
-                        "password": "mather@12345"
-                        }
-                    }
-        response = self.client.post(
-            self.user_signup_url,
-            user_details, format='json'
-        )
+            "user": {
+                "username": "mather",
+                "email": "",
+                "bio": "I am he",
+                "password": "mather@12345"
+            }
+        }
+        response = self.client.post(self.user_signup_url,
+                                    user_details, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_user_signin_with_invalid_email(self):
         user_details = {
-                "user": {
-                        "username": "mather",
-                        "email": "gdttyfd",
-                        "bio": "I am he",
-                        "password": "mather@12345"
-                        }
-                    }
-        response = self.client.post(
-            self.user_signup_url,
-            user_details, format='json'
-        )
+            "user": {
+                "username": "mather",
+                "email": "gdttyfd",
+                "bio": "I am he",
+                "password": "mather@12345"
+            }
+        }
+        response = self.client.post(self.user_signup_url,
+                                    user_details, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_user_signin_with_a_short_password(self):
+    def test_user_signin_with_invalid_password(self):
         user_details = {
-                "user": {
-                        "username": "mather",
-                        "email": "gdttyfdg@gmail.com",
-                        "bio": "I am he",
-                        "password": "mat"
-                        }
-                    }
-        response = self.client.post(
-            self.user_signup_url,
-            user_details, format='json'
-        )
+            "user": {
+                "username": "matherw",
+                "email": "gdttyfd@gmail.com",
+                "bio": "I am he",
+                "password": "refdfdsqsd"
+            }
+        }
+        response = self.client.post(self.user_signup_url,
+                                    user_details, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

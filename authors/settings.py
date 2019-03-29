@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+    'drf_yasg',
 ]
 
 MIDDLEWARE = [

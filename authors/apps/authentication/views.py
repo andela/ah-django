@@ -3,8 +3,8 @@ from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from drf_yasg.utils import swagger_auto_schema
 from django.conf import settings
-
 import jwt
 
 from .renderers import UserJSONRenderer
@@ -15,10 +15,20 @@ from .serializers import (
 
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
+    """ post:
+
+        Register a user
+
+    Creates a new user instance
+    """
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
+    @swagger_auto_schema(
+        query_serializer=LoginSerializer,
+        response={status.HTTP_200_OK: LoginSerializer}
+    )
     def post(self, request):
         user = request.data.get('user', {})
         # The create serializer, validate serializer, save serializer pattern
@@ -41,10 +51,20 @@ class RegistrationAPIView(APIView):
 
 
 class LoginAPIView(APIView):
+    """ post:
+
+        Logs in a user
+
+    Provided a valid password and email, logs the user into the system
+    """
     permission_classes = (AllowAny,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
+    @swagger_auto_schema(
+        query_serializer=LoginSerializer,
+        response={status.HTTP_200_OK: LoginSerializer}
+    )
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -59,6 +79,22 @@ class LoginAPIView(APIView):
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
+    """ get:
+
+        Retrieves a single user
+
+    Provided an id, retrieves a user from the system
+
+    put:
+        Update all details of a user
+
+    Updates all user information in the system
+
+    patch:
+        Update a single detail of a user
+
+    Updates part of the information by the user
+    """
     permission_classes = (IsAuthenticated,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer

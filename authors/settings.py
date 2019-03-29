@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
+import django_heroku
 import datetime
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -90,8 +91,6 @@ DATABASES = {
     }
 }
 
-
-
 # Password validation
 # https://docs.djangoproject.com/en/1.11/ref/settings/#auth-password-validators
 
@@ -147,6 +146,8 @@ REST_FRAMEWORK = {
         'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
     ),
 }
+
+django_heroku.settings(locals())
 
 JWT_AUTH = {
     'JWT_ENCODE_HANDLER':

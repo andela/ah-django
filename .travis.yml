@@ -13,10 +13,15 @@ services:
 
 before_script:
   - psql -c 'create database djangodb;' -U postgres
+  - python manage.py makemigrations
+  - python manage.py migrate
+  
+after_success:
+  - coveralls
 
 # run tests
 script:
-  - coverage run --source=authors.apps ./manage.py test
+  - coverage run --source='.' -m pytest auth*/apps/  && coverage report -m
 
 after_success:
   - coveralls

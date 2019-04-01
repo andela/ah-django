@@ -34,10 +34,10 @@ SchemaView = get_schema_view(
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^api/',
-        include(('authors.apps.authentication.urls',
-                 'authentication'), namespace='authentication')),
     url(r'^apidocs$',
         SchemaView.with_ui('swagger',
                            cache_timeout=0), name='schema-swagger-ui'),
+    url(r'api/v1/', include(('authors.apps.authentication.urls',
+                             'authentication'),
+                            namespace='authentication')),
 ]

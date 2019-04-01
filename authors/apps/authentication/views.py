@@ -1,3 +1,8 @@
+from ..core.mail import mail_helper
+from .serializers import (
+    LoginSerializer, RegistrationSerializer, UserSerializer)
+
+from .renderers import UserJSONRenderer
 from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -6,11 +11,6 @@ from rest_framework.views import APIView
 from drf_yasg.utils import swagger_auto_schema
 from django.conf import settings
 import jwt
-
-from .renderers import UserJSONRenderer
-from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer
-)
 
 
 class RegistrationAPIView(APIView):
@@ -30,24 +30,53 @@ class RegistrationAPIView(APIView):
         response={status.HTTP_200_OK: LoginSerializer}
     )
     def post(self, request):
+        """
+            Register a user
+            Creates a new user instance
+        """
         user = request.data.get('user', {})
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
-        serializer = self.serializer_class(data=user)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
 
-        # We will use the email for encoding our token
-        JWT_payload = {'email': serializer.data.get("email")}
+        JWT_payload = {'email': user.get("email")}
         # This line generates the token
         JWT_token = jwt.encode(JWT_payload, settings.SECRET_KEY,
                                algorithm='HS256').decode()
 
-        # Include token in the response
-        newdict = {'token': JWT_token}
-        newdict.update(serializer.data)
-        return Response(newdict, status=status.HTTP_201_CREATED)
+        serializer = self.serializer_class(data=user)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        mail_helper(request=request)
+        activation_link = mail_helper.get_link(
+            path='activate',
+            token=serializer.data.get('token', JWT_token)
+        )
+
+        mail_helper.send_mail(
+            subject='Activate Account',
+            to_addrs=[serializer.data.get('email')],
+            multiple_alternatives=True,
+            template_name='user_account_activation.html',
+            template_values={
+                'username': serializer.data.get('username'),
+                'activation_link': activation_link
+            }
+        )
+        res_message = {"message": "User account created." +
+                       " An activation link has been sent to " +
+                       f"{serializer.data.get('email')}."
+                       }
+
+        data = serializer.data
+        data['token'] = JWT_token
+
+        res_message['data'] = data
+
+        return Response(
+            data=res_message,
+            status=status.HTTP_201_CREATED)
 
 
 class LoginAPIView(APIView):
@@ -66,6 +95,11 @@ class LoginAPIView(APIView):
         response={status.HTTP_200_OK: LoginSerializer}
     )
     def post(self, request):
+        """
+            Logs in a user
+            Provided a valid password and email,
+            logs the user into the system
+        """
         user = request.data.get('user', {})
 
         # Notice here that we do not call `serializer.save()` like we did for
@@ -95,6 +129,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
 
     Updates part of the information by the user
     """
+
     permission_classes = (IsAuthenticated,)
     renderer_classes = (UserJSONRenderer,)
     serializer_class = UserSerializer

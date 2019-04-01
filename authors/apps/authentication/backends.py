@@ -25,3 +25,13 @@ class JWTokens(object):
         generated_token = encoder(payload_item)
 
         return generated_token
+
+
+class JWTAuthentication(object):
+    """docstring for JWTAthentication"""
+
+    def __init__(self):
+        pass
+
+    def authenticate(self, request):
+        pass

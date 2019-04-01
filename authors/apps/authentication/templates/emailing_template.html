@@ -1,0 +1,27 @@
+{% load inlinecss %}
+{% inlinecss 'css/email_styles.css' %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Haven</title>
+</head>
+<body>
+    <div class="container">
+        <header id="header" class="">
+            <h3>Authors Haven</h3>
+        </header><!-- /header -->
+        <div class="email-body content">
+            {% block body %}
+            {% endblock %}
+        </div>
+    <footer>
+     <h5 id="footer-sign"> Happy moments, <br><span id="sign-off">A. Haven team</span></h5>   
+    </footer>
+ </div><!-- container -->
+
+</body>
+</html>
+
+{% endinlinecss %}

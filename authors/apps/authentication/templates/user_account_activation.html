@@ -1,0 +1,15 @@
+{% extends 'emailing_template.html' %}
+{% block body %}
+    <div id="email-verification">
+        <p id="greeting">Hey <span id="name">{{ username }}</span>,</p>
+        <p id="text-body"><span id="shout">Yaaay!</span> You are now on Authors' Haven.</p>
+        <p> Click on the button below to activate your account: </p>
+            <div id="activation-button">
+                <a href="{{ activation_link }}" id="actv-link">Click here</a>
+            </div>
+            <div class="failed-button">
+                <p>If the button doesn't work, copy the link below and paste it in your browser: 
+                {{ activation_link }}</p>
+            </div>
+    </div>
+{% endblock %}

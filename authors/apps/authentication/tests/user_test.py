@@ -1,33 +1,29 @@
-from django.urls import reverse
-from rest_framework.test import APITestCase, APIClient
+"""
+    This test module holds tests related to user accounts
+"""
 from rest_framework import status
 
+from .base_test import BaseTestCase
 
-class UserSignupTest(APITestCase):
-    """ Tests for user signup """
 
-    def setUp(self):
-        """ This method does the preliminary setup """
-        # We first create a user_client
-        self.client = APIClient()
-        # We define the URL for user sign up
-        self.user_signup_url = reverse("authentication:signup")
+class TestUser(BaseTestCase):
+    """
+        Holds user account tests
+    """
 
-    def test_create_user(self):
+    def test_new_user_can_register(self):
         """
-        We test whether we can create a new user
+            A user should be informed of a verification email sent to
+            them upon successful registration.
         """
-        user_details = {
-            "user": {
-                "username": "yhghytfgh",
-                "email": "gdttyfdg@gmail.com",
-                "bio": "I am he",
-                "password": "mather@12345"
-            }
-        }
-        response = self.client.post(self.user_signup_url,
-                                    user_details, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        success_msg = 'activation link has been sent'
+
+        with self.settings(
+                EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
+            res = self.register_new_user(data=self.user_to_register)
+
+        self.assertIn(success_msg, res.data.get('message'))
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
 
     def test_user_signin_with_missing_fields(self):
         user_details = {
@@ -38,7 +34,7 @@ class UserSignupTest(APITestCase):
                 "password": "mather@12345"
             }
         }
-        response = self.client.post(self.user_signup_url,
+        response = self.client.post(self.registration_path,
                                     user_details, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -51,7 +47,7 @@ class UserSignupTest(APITestCase):
                 "password": "mather@12345"
             }
         }
-        response = self.client.post(self.user_signup_url,
+        response = self.client.post(self.registration_path,
                                     user_details, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -64,6 +60,6 @@ class UserSignupTest(APITestCase):
                 "password": "refdfdsqsd"
             }
         }
-        response = self.client.post(self.user_signup_url,
+        response = self.client.post(self.registration_path,
                                     user_details, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

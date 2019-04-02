@@ -22,6 +22,7 @@ class BaseTestCase(APITestCase):
         """
         self.client = APIClient()
         self.registration_path = reverse('authentication:activation')
+        self.login_path = reverse('authentication:login')
         self.factory = RequestFactory()
         self.forgot_password_url = reverse('authentication:forgot_password')
 
@@ -29,8 +30,7 @@ class BaseTestCase(APITestCase):
             'user': {
                 'username': 'GoodCow',
                 'email': 'cow@mammals.milk',
-                'password': 'badA55mammal!',
-                'bio': 'bio'
+                'password': 'badA55mammal!'
             }
         }
 

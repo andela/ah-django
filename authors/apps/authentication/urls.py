@@ -9,6 +9,7 @@ app_name = 'authentication'
 
 urlpatterns = [
     url(r'^user/?$', UserRetrieveUpdateAPIView.as_view()),
+    url(r'^users/login/?$', LoginAPIView.as_view(), name="login"),
     url(r'^users/', RegistrationAPIView.as_view(), name='activation'),
     url(r'^users/login/?$', LoginAPIView.as_view()),
     url(r'^account/forgot_password/?$',

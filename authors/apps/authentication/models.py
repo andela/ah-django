@@ -3,7 +3,6 @@ from .backends import JWTokens
 import jwt
 
 from datetime import datetime, timedelta
-from .backends import JWTokens
 from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
@@ -15,7 +14,7 @@ class UserManager(BaseUserManager):
     """
     Django requires that custom users define their own Manager class. By
     inheriting from `BaseUserManager`, we get a lot of the same code used by
-    Django to create a `User` for free. 
+    Django to create a `User` for free.
 
     All we have to do is override the `create_user` function which we will use
     to create `User` objects.
@@ -41,11 +40,11 @@ class UserManager(BaseUserManager):
 
     def create_superuser(self, username, email, password):
         """
-      Create and return a `User` with superuser powers.
+        Create and return a `User` with superuser powers.
 
-      Superuser powers means that this use is an admin that can do anything
-      they want.
-      """
+        Superuser powers means that this use is an admin that can do anything
+        they want.
+        """
         if password is None:
             raise TypeError('Superusers must have a password.')
 
@@ -112,10 +111,10 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def get_full_name(self):
         """
-      This method is required by Django for things like handling emails.
-      Typically, this would be the user's first and last name. Since we do
-      not store the user's real name, we return their username instead.
-      """
+        This method is required by Django for things like handling emails.
+        Typically, this would be the user's first and last name. Since we do
+        not store the user's real name, we return their username instead.
+        """
         return self.username
 
     def get_short_name(self):

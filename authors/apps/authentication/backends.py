@@ -1,6 +1,16 @@
 from rest_framework_jwt.settings import api_settings
 
 
+class JWTAuthentication(object):
+    """
+    docstring for JWTAthentication
+    """
+
+    def __init__(self, arg):
+        super(JWTAuthentication, self).__init__()
+        self.arg = arg
+
+
 class JWTokens(object):
     """
     This class will define the setup details which will

@@ -15,9 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
+from django.urls import path
+from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-
     url(r'^api/', include('authors.apps.authentication.urls')),
+    url(r'^logout/$', auth_views.LogoutView.as_view(), name='logout'),
+    url(r'^oauth/', include('rest_framework_social_oauth2.urls')),
+    # path('api/auth/oauth/', include('rest_framework_social_oauth2.urls'))
+
 ]

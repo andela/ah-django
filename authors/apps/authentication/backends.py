@@ -8,10 +8,12 @@
     Authorization: token yourtokenhere
 """
 import jwt
+from datetime import datetime
 from django.conf import settings
 from rest_framework import authentication
 from rest_framework.exceptions import AuthenticationFailed
 from .models import User
+from rest_framework_jwt.settings import api_settings
 
 
 class JWTAuthentication(authentication.BaseAuthentication):

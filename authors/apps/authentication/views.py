@@ -1,9 +1,9 @@
 from .backends import JWTAuthentication as auth
 
-from rest_framework import generics, status
+
+from rest_framework import generics, status, permissions
 from django.core.mail import send_mail
 
-from rest_framework import status
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -16,11 +16,16 @@ from djoser.compat import get_user_email, get_user_email_field_name
 from .renderers import UserJSONRenderer
 from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
-    PasswordResetSerializer
+    PasswordResetSerializer, SocialSerializer
 )
 
 from . import mailer
-from .models import User
+from requests.exceptions import HTTPError
+
+from social_django.utils import load_strategy, load_backend
+from social_core.backends.oauth import BaseOAuth2, BaseOAuth1
+from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
+import json
 
 
 class RegistrationAPIView(APIView):
@@ -111,6 +116,7 @@ class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ResetPassword(generics.GenericAPIView):
     serializer_class = PasswordResetSerializer
@@ -219,6 +225,7 @@ class ResetPasswordConfirmView(generics.UpdateAPIView):
                         data={'message': 'Password reset successfully.',
                               'status': 200})
 
+
 class UserListApiView(ListAPIView):
     permission_classes = (IsAuthenticated,)
     queryset = User.objects.all()
@@ -230,3 +237,65 @@ class UserListApiView(ListAPIView):
             queryset, many=True, context={'request': request})
         return Response(serializer.data)
 
+
+class SocialAuthView(generics.GenericAPIView):
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = SocialSerializer
+
+    def post(self, request, *args, **kwargs):
+        """ interrupt social_auth authentication pipeline"""
+        # pass the request to serializer to make it a python object
+        # serializer also catches errors of blank request objects
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        provider = serializer.data.get('provider', None)
+        strategy = load_strategy(request)  # creates the app instance
+
+        try:
+            # load backend with strategy and provider from settings(AUTHENTICATION_BACKENDS)
+            backend = load_backend(
+                strategy=strategy, name=provider, redirect_uri=None)
+
+        except MissingBackend as error:
+
+            return Response({
+                "errors": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # check type of oauth provider e.g facebook is BaseOAuth2 twitter is BaseOAuth1
+            if isinstance(backend, BaseOAuth1):
+                # oath1 passes access token and secret
+                access_token = {
+                    "oauth_token": serializer.data.get('access_token'),
+                    "oauth_token_secret": serializer.data.get('access_token_secret'),
+                }
+
+            elif isinstance(backend, BaseOAuth2):
+                # oauth2 only has access token
+                access_token = serializer.data.get('access_token')
+
+            authenticated_user = backend.do_auth(access_token)
+
+        except HTTPError as error:
+            # catch any error as a result of the authentication
+            return Response({
+                "error": "Http Error",
+                "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        except AuthForbidden as error:
+            return Response({
+                "error": "invalid token",
+                "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if authenticated_user and authenticated_user.is_active:
+            # Check if the user you intend to authenticate is active
+            response = {"email": authenticated_user.email,
+                        "username": authenticated_user.username,
+                        "token": authenticated_user.token}
+
+            return Response(status=status.HTTP_200_OK, data=response)

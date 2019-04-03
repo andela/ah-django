@@ -23,6 +23,7 @@ class BaseTestCase(APITestCase):
         self.client = APIClient()
         self.registration_path = reverse('authentication:activation')
         self.factory = RequestFactory()
+        self.forgot_password_url = reverse('authentication:forgot_password')
 
         self.user_to_register = {
             'user': {
@@ -33,6 +34,28 @@ class BaseTestCase(APITestCase):
             }
         }
 
+        self.user = {
+            "user": {
+                "email": "authorshaven2@gmail.com",
+                "username": "test_me1",
+                "password": "testuser!23",
+                "bio": "I love programming"
+            }
+        }
+
+        self.reset_password_data = {
+            "password": "Itr!3d21",
+            "confirm_password": "Itr!3d21"
+        }
+
+        self.reset_password_empty_payload = {
+            "email": "",
+        }
+
+        self.reset_password_correct_email = {
+            "email": "cow@mammals.milk",
+        }
+
     def register_new_user(self, data={}):
         """
             Creates a new user account and returns the request response
@@ -40,3 +63,9 @@ class BaseTestCase(APITestCase):
         return self.client.post(self.registration_path,
                                 data=data,
                                 format='json')
+
+    def forgot_password(self, data):
+        return self.client.post(
+            self.forgot_password_url,
+            data=data,
+            format="json")

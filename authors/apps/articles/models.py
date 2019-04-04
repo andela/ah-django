@@ -1,21 +1,23 @@
-from django.db import models
+from authors.apps.reactions.models import UserReaction
+from authors.apps.authentication.models import User
+from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import ArrayField
-from ..authentication.models import User
+from django.db import models
 
 
 class Article(models.Model):
     """Article model"""
     title = models.CharField(max_length=100, blank=False)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, db_index=True)
     description = models.TextField(blank=False)
     body = models.TextField(blank=False)
     tagList = ArrayField(
-        models.CharField(max_length=100, blank=False)
+        models.CharField(max_length=100), blank=True, null=True
     )
     createdAt = models.DateTimeField(auto_now_add=True)
     updatedAt = models.DateTimeField(blank=True, null=True, auto_now=True)
-    # author = models.CharField(max_length=100, blank=False)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
+    user_reaction = GenericRelation(UserReaction, related_query_name='article')
 
     def __str__(self):
         return self.title

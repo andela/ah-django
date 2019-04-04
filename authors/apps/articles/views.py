@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .models import Article
 from .serializers import ArticleSerializer
+from ..core.permissions import IsOwnerOrReadOnly
 from django.template.defaultfilters import slugify
 
 
@@ -44,18 +45,6 @@ class ArticleList(generics.ListAPIView):
     serializer_class = ArticleSerializer
 
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
-    """
-    Object-level permission to only allow owners of an article to edit it.
-    """
-
-    def has_object_permission(self, request, view, obj):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-
-        return obj.author == request.user
-
-
 class ArticleDetails(generics.RetrieveAPIView, mixins.UpdateModelMixin,
                      generics.GenericAPIView, mixins.DestroyModelMixin):
     """ get:
@@ -75,5 +64,4 @@ class ArticleDetails(generics.RetrieveAPIView, mixins.UpdateModelMixin,
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response({"detail": "article deleted"},
-                        status=status.HTTP_200_OK)
+        return Response({"detail": "article deleted"})

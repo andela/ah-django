@@ -4,6 +4,7 @@ from .views import (
     ArticleList, ArticleDetails, NewArticle
 )
 
+
 app_name = 'articles'
 
 urlpatterns = [

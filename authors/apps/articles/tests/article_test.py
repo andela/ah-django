@@ -28,7 +28,7 @@ class TestNewArticle(BaseTestCase):
 
         response = self.client.post(self.new_article_path,
                                     new_article, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_new(self):
         """
@@ -117,7 +117,7 @@ class ArticleDetails(BaseTestCase):
         }
         response = self.client.put(self.article_details,
                                    update_article, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_article(self):
         """
@@ -135,4 +135,4 @@ class ArticleDetails(BaseTestCase):
         test delete article unauthorized
         """
         response = self.client.put(self.article_details)
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

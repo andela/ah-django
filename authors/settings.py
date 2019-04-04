@@ -42,9 +42,11 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+    'authors.apps.reactions',
+    'authors.apps.articles',
+
     'drf_yasg',
     'django_inlinecss',
-    'authors.apps.articles'
 ]
 
 MIDDLEWARE = [
@@ -127,7 +129,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
 
 CORS_ORIGIN_WHITELIST = (
     '0.0.0.0:4000',
@@ -145,7 +149,8 @@ REST_FRAMEWORK = {
     'NON_FIELD_ERRORS_KEY': 'error',
 
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
+        'authors.apps.authentication.backends.JWTAuthentication',
     ),
 }
 

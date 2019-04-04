@@ -13,7 +13,7 @@ class RegistrationTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "Premier Member",
+                "username": "PremierMember",
                 "password": "premiermember2019"
             }
         }
@@ -45,7 +45,7 @@ class RegistrationTestCase(APITestCase):
         self.user1_invalidmail = {
             "user": {
                 "email": "premiermembil.com",
-                "username": "premier member",
+                "username": "premier_member",
                 "password": "premiermember2019"
             }
         }

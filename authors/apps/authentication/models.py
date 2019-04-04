@@ -1,12 +1,14 @@
 import jwt
 
 from datetime import datetime, timedelta
-
 from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
 from django.db import models
+
+from authors.apps.profiles.models import Profile
+from authors.apps.profiles.serializers import ProfileSerializer
 
 
 class UserManager(BaseUserManager):
@@ -135,3 +137,25 @@ class User(AbstractBaseUser, PermissionsMixin):
             payload,
             settings.SECRET_KEY, algorithm='HS256').decode('utf-8')
         return token
+
+    def profile_getter(self):
+        """
+            this method returns the profile
+            matching the instance of this user
+        """
+        return Profile.objects.filter(user_id=self.id).first()
+
+    @property
+    def bio(self):
+        """
+            This property method returns the bio of the user
+        """
+        return ProfileSerializer(self.profile_getter()).data["bio"]
+
+    @property
+    def image(self):
+        """
+            this property method returns the image of the user
+
+        """
+        return ProfileSerializer(self.profile_getter()).data["image"]

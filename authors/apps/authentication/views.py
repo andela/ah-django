@@ -25,7 +25,6 @@ from requests.exceptions import HTTPError
 from social_django.utils import load_strategy, load_backend
 from social_core.backends.oauth import BaseOAuth2, BaseOAuth1
 from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
-import json
 
 
 class RegistrationAPIView(APIView):

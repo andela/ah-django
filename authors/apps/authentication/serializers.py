@@ -1,5 +1,7 @@
 from django.contrib.auth import authenticate
-from django.core.validators import RegexValidator
+from django.core.validators import (RegexValidator)
+from rest_framework.validators import UniqueValidator
+
 
 from rest_framework import serializers
 
@@ -21,6 +23,20 @@ class RegistrationSerializer(serializers.ModelSerializer):
         validators=[alphanumeric]
     )
 
+    alphanumericusername = RegexValidator(
+        r'^[a-zA-Z][0-9a-zA-Z_]*$',
+        """Ensure username has alphanumerics and underscore only.
+        Username cannot begin with underscore or integer""")
+    username = serializers.CharField(
+        max_length=27,
+        validators=[
+            alphanumericusername,
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message='user with this username already exists.',
+            )
+        ]
+    )
     # The client should not be able to send a token along with a registration
     # request. Making `token` read-only handles that for us.
 
@@ -28,7 +44,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         model = User
         # List all of the fields that could possibly be included in a request
         # or response, including fields specified explicitly above.
-        fields = ['email', 'username', 'password', 'token']
+        fields = ['email', 'username', 'password', 'token', 'bio', 'image']
 
     def create(self, validated_data):
         # Use the `create_user` method we wrote earlier to create a new user.
@@ -92,7 +108,9 @@ class LoginSerializer(serializers.Serializer):
         return {
             'email': user.email,
             'username': user.username,
-            'token': user.token
+            'token': user.token,
+            'bio': user.bio,
+            'image': user.image
         }
 
 
@@ -111,7 +129,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'username', 'password', 'bio', 'image')
 
         # The `read_only_fields` option is an alternative for explicitly
         # specifying the field with `read_only=True` like we did for password

@@ -13,7 +13,7 @@ class BaseTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "Premier Member",
+                "username": "PremierMember",
                 "password": "premiermember2019"
             }
         }

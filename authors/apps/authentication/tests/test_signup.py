@@ -12,14 +12,14 @@ class RegistrationTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "Premier Member",
+                "username": "PremierMember",
                 "password": "premiermember2019"
             }
         }
         self.duplicate_user1email = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "Premier Member 2",
+                "username": "Premier_Member_2",
                 "password": "premiermember2019"
             }
         }
@@ -27,14 +27,14 @@ class RegistrationTestCase(APITestCase):
         self.duplicate_user1username = {
             "user": {
                 "email": "premiermember2@gmail.com",
-                "username": "Premier Member",
+                "username": "PremierMember",
                 "password": "premiermember2019"
             }
         }
 
         self.missing_email = {
             "user": {
-                "username": "Premier Member",
+                "username": "Premier_Member",
                 "password": "premiermember2019"
             }
         }
@@ -48,7 +48,7 @@ class RegistrationTestCase(APITestCase):
         self.short_password = {
             "user": {
                 "email": "premiermember2@gmail.com",
-                "username": "premier member",
+                "username": "premier_member",
                 "password": "2019"
             }
         }
@@ -56,14 +56,14 @@ class RegistrationTestCase(APITestCase):
         self.invalidmail = {
             "user": {
                 "email": "premiermembil.com",
-                "username": "premier member",
+                "username": "premier_member",
                 "password": "premiermember2019"
             }
         }
         self.invalid_password = {
             "user": {
                 "email": "premiermember2@gmail.com",
-                "username": "premier member",
+                "username": "premier_member",
                 "password": "2019*!//]"
             }
         }
@@ -183,7 +183,7 @@ class RegistrationTestCase(APITestCase):
                          {"errors":
                           {"password":
                            ["Ensure this field only has alphanumerics."]}})
-        
+
     def test_getting_token_after_signup(self):
         """
         test a normal user will get a token upon signup
@@ -193,3 +193,23 @@ class RegistrationTestCase(APITestCase):
         self.assertEqual(register_new_user.status_code,
                          status.HTTP_201_CREATED)
         self.assertIn('token', json.loads(register_new_user.content)["user"])
+
+    def test_sign_up_with_invalid_username(self):
+        """
+            test when a user tries to signup with an invalid username
+        """
+        self.user_username_invalid = {
+            "user": {
+                "email": "premiermemberspace@gmail.com",
+                "username": "Premier Member",
+                "password": "premiermember2019"
+            }
+        }
+        res = self.client.post(
+            "/api/users", self.user_username_invalid, format="json")
+        self.assertEqual(res.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(
+            json.loads(res.content)["errors"]["username"],
+            ["""Ensure username has alphanumerics and underscore only.
+        Username cannot begin with underscore or integer"""])

@@ -55,6 +55,10 @@ class UserManager(BaseUserManager):
 
         return user
 
+    # This is the method that the library uses to retrieve user object
+    def get_by_natural_key(self, username):
+        return self.get(username=username)
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     # Each `User` needs a human-readable unique identifier that we can use to

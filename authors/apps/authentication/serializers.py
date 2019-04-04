@@ -48,8 +48,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 
 
 class LoginSerializer(serializers.Serializer):
-    email = serializers.CharField(max_length=255)
-    username = serializers.CharField(max_length=255, read_only=True)
+    username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)
 
     # On log in, the user should be able to get a token
@@ -61,16 +60,14 @@ class LoginSerializer(serializers.Serializer):
         # user in, this means validating that they've provided an email
         # and password and that this combination matches one of the users in
         # our database.
-        email = data.get('email', None)
+        username = data.get('username', None)
         password = data.get('password', None)
-
-
 
         # As mentioned above, an email is required. Raise an exception if an
         # email is not provided.
-        if email is None:
+        if username is None:
             raise serializers.ValidationError(
-                'An email address is required to log in.'
+                'A username is required to log in.'
             )
 
         # As mentioned above, a password is required. Raise an exception if a
@@ -84,12 +81,12 @@ class LoginSerializer(serializers.Serializer):
         # for a user that matches this email/password combination. Notice how
         # we pass `email` as the `username` value. Remember that, in our User
         # model, we set `USERNAME_FIELD` as `email`.
-        user = authenticate(username=email, password=password)
+        user = authenticate(username=username, password=password)
         # If no user was found matching this email/password combination then
         # `authenticate` will return `None`. Raise an exception in this case.
         if user is None:
             raise serializers.ValidationError(
-                'A user with this email and password was not found.'
+                'A user with this username and password was not found.'
             )
 
         # Django provides a flag on our `User` model called `is_active`. The
@@ -106,7 +103,6 @@ class LoginSerializer(serializers.Serializer):
         # This is the data that is passed to the `create` and `update` methods
         # that we will see later on.
         return {
-            'email': user.email,
             'username': user.username,
             'token': token
         }

@@ -12,7 +12,7 @@ class TestUserLogin(BaseTestCase):
 
         user_details = {
             "user": {
-                "email": "cow@mammals.milk",
+                'username': 'GoodCow',
                 "password": "badA55mammal!"
             }
         }

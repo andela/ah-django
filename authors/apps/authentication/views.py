@@ -49,7 +49,7 @@ class RegistrationAPIView(APIView):
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
 
-        JWT_payload = {'email': user.get("email")}
+        JWT_payload = {'username': user.get("username")}
         # This line generates the token
         JWT_token = jwt.encode(JWT_payload, settings.SECRET_KEY,
                                algorithm='HS256').decode()

@@ -5,10 +5,13 @@
 from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
 from django.test.client import RequestFactory
+from rest_framework_jwt.compat import get_user_model
 
 import django
 
 django.setup()
+
+User = get_user_model()
 
 
 class BaseTestCase(APITestCase):
@@ -22,6 +25,18 @@ class BaseTestCase(APITestCase):
         """
         self.client = APIClient()
         self.registration_path = reverse('authentication:activation')
+        self.new_article_path = reverse('articles:new_article')
+        self.articles_feed = reverse('articles:articles_feed')
+        self.username = 'testguy99'
+        self.email = 'testguy99'
+        self.testuser = User.objects.create_user(self.username, self.email)
+        # Article model imported here as it has to wait for django.setup()
+        from ...articles.models import Article
+        self.article = Article.objects.create(slug='test-slug',
+                                              tagList=['test'],
+                                              author=self.testuser)
+        self.article_details = reverse('articles:article_details',
+                                       kwargs={'slug': "test-slug"})
         self.login_path = reverse('authentication:login')
         self.factory = RequestFactory()
         self.forgot_password_url = reverse('authentication:forgot_password')

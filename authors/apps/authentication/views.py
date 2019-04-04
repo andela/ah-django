@@ -1,4 +1,8 @@
 from ..core.mail import mail_helper
+from .serializers import (
+    LoginSerializer, RegistrationSerializer, UserSerializer,
+    ForgotPasswordSerializer, ResetPasswordSerializer,
+    SocialAuthSerializer)
 
 from .renderers import UserJSONRenderer
 from rest_framework import status
@@ -14,6 +18,14 @@ from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.core.mail import EmailMultiAlternatives
 from rest_framework import exceptions
+from .backends import JWTokens
+from requests.exceptions import HTTPError
+
+from social_django.utils import load_backend, load_strategy
+from social_core.exceptions import (
+    MissingBackend, AuthTokenError, AuthForbidden)
+from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
+from rest_framework.generics import CreateAPIView
 import jwt
 import os
 
@@ -266,3 +278,117 @@ class ResetPasswordAPIView(APIView):
         mail.send()
         response = {"message": "Password updated successfully"}
         return Response(response, status=status.HTTP_200_OK)
+
+
+class SocialAuth(CreateAPIView):
+    """
+    Gets user details from social sign up.
+    Save the user data in database
+    """
+
+    permission_classes = (AllowAny,)
+    renderer_classes = (UserJSONRenderer,)
+    serializer_class = SocialAuthSerializer
+
+    def post(self, request, *args, **kwargs):
+        """
+        This method recieves the request by user to login to the account
+        via a social site(facebook, google or twitter)
+        """
+
+        # The request is passes to the serializer where
+        # it is converted to json format
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        # token provider is the source of our token(socia site)
+        token_provider = serializer.data.get('token_provider', None)
+
+        # Thia creates the app instance
+        strategy = load_strategy(request)
+        try:
+            # Backends are important for authentications
+            # In this case we use authentication modules for
+            # facebook, twitter and google to validate the access token
+            backend = load_backend(
+                strategy=strategy, name=token_provider, redirect_uri=None
+            )
+
+        # An exception is raised if the backend interface
+        # cannot be located in the app.
+        except MissingBackend as error:
+            return Response({
+                "error": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            # check type of oauth provided.
+            if isinstance(backend, BaseOAuth1):
+                # oath1 contains both the access_token and the
+                # access_token_secret
+                access_token = {
+                    "oauth_token": serializer.data.get('access_token'),
+                    "oauth_token_secret": serializer.data.get(
+                            'access_token_secret'
+                        )
+                }
+            elif isinstance(backend, BaseOAuth2):
+                # oath2 only contains the access_token
+                access_token = serializer.data.get('access_token')
+        except HTTPError as error:
+            return Response({
+                "error": "This token is not valid",
+                "message": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        except AuthTokenError as error:
+            return Response({
+                "error": "invalid credentials",
+                "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            # The user can now bw authenticated.
+            # Thi is done by the authentication module of
+            # the social app.
+            valid_user = backend.do_auth(access_token)
+
+        # Failure to authenticate brings up an error
+        # which is caught and displayed.
+        except HTTPError as error:
+            return Response({
+                "error": "Authentication error",
+                "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # When the authentication is not successful,
+        # the error is raised.
+        except AuthForbidden as error:
+            return Response({
+                "error": "This token is not valid",
+                "details": str(error)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        """ Check if the user is active """
+        if valid_user and valid_user.is_active:
+
+            # The token is generated using the username
+            token = JWTokens.generate_token_social_auth(
+                self,
+                valid_user.username
+            )
+            # Headers embed the user information
+            headers = self.get_success_headers(serializer.data)
+            response = {
+                "email": valid_user.email,
+                "username": valid_user.username,
+                "tokem": token
+            }
+            return Response(
+                response,
+                status=status.HTTP_201_CREATED,
+                headers=headers
+            )
+        else:
+            return Response({
+                "error": "failed to authenticate",
+            }, status=status.HTTP_400_BAD_REQUEST)

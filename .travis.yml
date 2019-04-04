@@ -11,6 +11,9 @@ install:
 services:
   - postgresql
 
+addons:
+  postgresql: "9.4"
+
 before_script:
   - psql -c 'create database djangodb;' -U postgres
   - python manage.py makemigrations

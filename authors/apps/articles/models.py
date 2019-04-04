@@ -1,5 +1,6 @@
 from django.db import models
 from authors.apps.authentication.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 from authors.apps.utils.slug_generator import Slug
@@ -48,3 +49,11 @@ class Articles(models.Model):
             if self.old_fields != self.fields and self.fields:
                 self.updated_at = datetime.now()
         super().save(*args, **kwargs)
+    created_at = models.DateField(auto_now_add=True)
+
+
+class Rating(models.Model):
+    article_id = models.ForeignKey(Articles, on_delete=models.CASCADE)
+    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.IntegerField(validators=[MaxValueValidator(5),
+                                             MinValueValidator(0)])

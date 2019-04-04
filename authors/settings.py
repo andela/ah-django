@@ -216,8 +216,9 @@ DJOSER = {
     'SET_PASSWORD_RETYPE': True,
     'PASSWORD_RESET_CONFIRM_RETYPE': True,
 }
-
-django_heroku.settings(locals())
+SOCIAL_AUTH_CLEAN_USERNAMES = True
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = False
+SOCIAL_AUTH_SLUGIFY_USERNAMES = True
 
 SOCIAL_AUTH_URL_NAMESPACE = 'social'
 
@@ -235,7 +236,6 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 FACEBOOK_EXTENDED_PERMISSIONS = ['email']
 
 SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
-SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
 
 SOCIAL_AUTH_USER_MODEL = 'authentication.User'
 
@@ -246,4 +246,6 @@ SOCIAL_AUTH_GOOGLE_SCOPE = ['email', 'username', 'password']
 
 SOCIAL_AUTH_ALLOWED_REDIRECT_URIS = '/oauth/complete/twitter/'
 
-SOCIAL_AUTH_CLEAN_USERNAMES = True
+
+django_heroku.settings(locals())
+

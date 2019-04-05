@@ -1,7 +1,8 @@
 from rest_framework.generics import (CreateAPIView,
                                      ListAPIView, RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, pagination
+from rest_framework.pagination import PageNumberPagination
 from .models import Articles
 from .serializers import ArticlesSerializer, LikesSerializer
 from ..authentication.models import User
@@ -19,9 +20,15 @@ from .serializers import RatingSerializer
 from rest_framework.renderers import JSONRenderer
 
 
-class CreateArticleView(CreateAPIView, ListAPIView):
-    queryset = Articles.objects.all()
+class ArticlesPagination(PageNumberPagination):
+    page_size_query_param = 'page_size'
+
+
+class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
+    queryset = Articles.objects.get_queryset().order_by('id')
+    ordering = ['-id']
     serializer_class = ArticlesSerializer
+    pagination_class = ArticlesPagination
 
     def post(self, request):
         if request.user.is_authenticated:
@@ -43,6 +50,13 @@ class CreateArticleView(CreateAPIView, ListAPIView):
             )
 
     def get(self, request, *args, **kwargs):
+
+        page_size = request.GET.get('page_size')
+        if page_size is None:
+            page_size = 10
+
+        pagination.PageNumberPagination.page_size = page_size
+
         return self.list(request, *args, **kwargs)
 
 

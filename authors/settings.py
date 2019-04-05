@@ -46,12 +46,11 @@ INSTALLED_APPS = [
     'authors.apps.authentication',
     'authors.apps.core',
     'authors.apps.profiles',
+    'authors.apps.articles',
 
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
-    'authors.apps.articles'
-
 ]
 
 MIDDLEWARE = [
@@ -90,6 +89,7 @@ REST_FRAMEWORK = {
     ),
     'EXCEPTION_HANDLER':
     'config.exceptions.api_exception_handler',
+
 }
 
 TEMPLATES = [
@@ -207,6 +207,8 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
+
+
 }
 
 FROM_EMAIL = 'misochobrian@gmail.com'
@@ -239,6 +241,24 @@ FACEBOOK_EXTENDED_PERMISSIONS = ['email']
 
 SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
 
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+
+# twitter secret keys
+SOCIAL_AUTH_TWITTER_KEY = os.environ['TWITTER_KEY']
+SOCIAL_AUTH_TWITTER_SECRET = os.environ['TWITTER_SECRET']
+
+# facebook secret keys
+SOCIAL_AUTH_FACEBOOK_KEY = os.environ['FACEBOOK_KEY']
+SOCIAL_AUTH_FACEBOOK_SECRET = os.environ['FACEBOOK_SECRET']
+SOCIAL_AUTH_FACEBOOK_SCOPE = ['email']
+SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
+    'fields': 'id, name, email'
+}
+FACEBOOK_EXTENDED_PERMISSIONS = ['email']
+
+SOCIAL_AUTH_ADMIN_USER_SEARCH_FIELDS = ['username', 'first_name', 'email']
+SOCIAL_AUTH_USERNAME_IS_FULL_EMAIL = True
+
 SOCIAL_AUTH_USER_MODEL = 'authentication.User'
 
 # google secret keys
@@ -250,3 +270,4 @@ SOCIAL_AUTH_ALLOWED_REDIRECT_URIS = '/oauth/complete/twitter/'
 
 
 django_heroku.settings(locals())
+SOCIAL_AUTH_CLEAN_USERNAMES = True

@@ -180,8 +180,8 @@ class CURDArticlesTestCase(APITestCase):
         self.rate_article_url = "/api/articles/{article_id}/rating/"
         payload = {"rating":
                    {
-                    "rating": 2
-                        }
+                       "rating": 2
+                   }
                    }
         rate_article = self.client.post(
             self.rate_article_url.format(article_id=article_id),
@@ -194,8 +194,8 @@ class CURDArticlesTestCase(APITestCase):
         self.rate_article_url = "/api/articles/{article_id}/rating/"
         payload = {"rating":
                    {
-                    "rating": 2
-                        }
+                       "rating": 2
+                   }
                    }
         rate_article = self.client.post(
             self.rate_article_url.format(article_id=123),
@@ -211,7 +211,7 @@ class CURDArticlesTestCase(APITestCase):
         self.rate_article_url = "/api/articles/{article_id}/rating/"
         payload = {"rating":
                    {
-                        }
+                   }
                    }
         rate_article = self.client.post(
             self.rate_article_url.format(article_id=article_id),
@@ -227,8 +227,8 @@ class CURDArticlesTestCase(APITestCase):
         self.rate_article_url = "/api/articles/{article_id}/rating/"
         payload = {"rating":
                    {
-                    "rating": "five"
-                        }
+                       "rating": "five"
+                   }
                    }
         rate_article = self.client.post(
             self.rate_article_url.format(article_id=article_id),
@@ -236,3 +236,29 @@ class CURDArticlesTestCase(APITestCase):
         )
         self.assertEqual(rate_article.status_code,
                          status.HTTP_400_BAD_REQUEST)
+
+    def test_pagination_by_page_size(self):
+        """Test pagination when passing page size as query param """
+
+        self.list_article_url = '/api/articles/?page_size=4'
+        for i in range(10):
+            self.create_article(self.article)
+
+        response = self.client.get(self.list_article_url)
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+        self.assertEqual(len(data["results"]), 4)
+
+    def test_default_pagination(self):
+        """Test default pagination of articles """
+
+        self.list_article_url = '/api/articles'
+        for i in range(20):
+            self.create_article(self.article)
+
+        response = self.client.get(self.list_article_url)
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+        self.assertEqual(len(data["results"]), 10)

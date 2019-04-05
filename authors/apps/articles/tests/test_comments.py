@@ -1,0 +1,176 @@
+from rest_framework.test import APITestCase, APIClient
+from rest_framework.views import status
+import json
+
+
+class TestCommentsOperations(APITestCase):
+
+    def setUp(self):
+        self.client = APIClient()
+        self.post_article_url = '/api/articles/'
+        self.post_get_url = '/api/articles/{article_slug}/comments'
+        self.delete_put_url = '/api/articles/{article_slug}/comments/{comm_id}'
+        self.user_signup = {
+            "user": {
+                "email": "testuser@gmail.com",
+                "username": "testuser",
+                "password": "password123"
+            }
+        }
+        self.article = {
+            "article": {
+                "title": "This is the article title",
+                "description": "This is the article description",
+                "body": "This is the article body",
+                "image_url": "https://imageurl.com"
+            }
+
+        }
+
+        self.create_comment = {
+            "comment": {"body": "This is a good read"}
+        }
+
+        self.edit_comment = {
+            "comment": {"body": "This is a good read"}
+        }
+
+        self.fasle_slug = 'no-slug'
+
+        self.signup = self.client.post(
+            "/api/users",
+            self.user_signup,
+            format="json"
+        )
+
+        self.credentials = json.loads(self.signup.content)[
+            "user"]["token"]
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.credentials)
+
+    def create_article(self, data=None):
+        """ method for creating and article """
+        data = data
+
+        return self.client.post(
+            self.post_article_url,
+            data,
+            format='json', follow=True
+        )
+
+    def test_create_comment(self):
+        article = self.client.post(
+            self.post_article_url,
+            data=self.article,
+            format='json', follow=True
+        )
+        data = json.loads(article.content)
+        article_slug = data['slug']
+
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+
+        self.assertEqual(comments.status_code,
+                         status.HTTP_201_CREATED)
+
+    def test_put_comment(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['slug']
+
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+        comm = json.loads(comments.content)
+        comm_id = comm['id']
+
+        update_comment = self.client.put(
+            self.delete_put_url.format(article_slug=article_slug,
+                                       comm_id=comm_id),
+            data=self.edit_comment, format='json'
+        )
+
+        self.assertEqual(update_comment.status_code,
+                         status.HTTP_200_OK)
+
+    def test_delete_comment(self):
+        article = self.create_article(
+            self.article)
+        data = json.loads(article.content)
+        article_slug = data['slug']
+
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+        comm = json.loads(comments.content)
+        comm_id = comm['id']
+
+        delete_comment = self.client.delete(
+            self.delete_put_url.format(article_slug=article_slug,
+                                       comm_id=comm_id)
+        )
+        self.assertEqual(delete_comment.status_code,
+                         status.HTTP_200_OK)
+
+    def test_get_comment(self):
+        article = self.create_article(
+            self.article)
+        data = json.loads(article.content)
+        article_slug = data['slug']
+
+        self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+            )
+
+        get_comments = self.client.get(
+            self.post_get_url.format(article_slug=article_slug))
+
+        self.assertEqual(get_comments.status_code,
+                         status.HTTP_200_OK)
+
+    def test_get_non_eixisting_article(self):
+
+        get_comments = self.client.get(
+            self.post_get_url.format(article_slug=self.fasle_slug))
+
+        self.assertEqual(get_comments.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_post_to_non_existing_article(self):
+
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=self.fasle_slug),
+            data=self.create_comment,
+            format='json'
+        )
+
+        self.assertEqual(comments.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_delete_non_existing_article(self):
+
+        delete_comment = self.client.delete(
+            self.delete_put_url.format(article_slug=self.fasle_slug,
+                                       comm_id='1')
+        )
+        self.assertEqual(delete_comment.status_code,
+                         status.HTTP_404_NOT_FOUND)
+
+    def test_edit_non_existing_article(self):
+        update_comment = self.client.put(
+            self.delete_put_url.format(article_slug=self.fasle_slug,
+                                       comm_id='1'),
+            data=self.edit_comment, format='json'
+        )
+
+        self.assertEqual(update_comment.status_code,
+                         status.HTTP_404_NOT_FOUND)

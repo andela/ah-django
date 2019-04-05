@@ -84,3 +84,11 @@ class Likes(models.Model):
 
     class Meta:
         unique_together = (("article", "user"),)
+
+
+class Comments(models.Model):
+    article_slug = models.SlugField(max_length=200)
+    created_at = models.DateTimeField()
+    updated_at = models.DateTimeField()
+    body = models.TextField()
+    author = models.CharField(max_length=200)

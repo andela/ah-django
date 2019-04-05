@@ -27,8 +27,8 @@ django-simple-history==2.7.0
 django-taggit==0.23.0
 django-taggit-serializer==0.1.7
 django-templated-mail==1.1.1
-djangorestframework==3.9.0
 djangorestframework-jwt==1.11.0
+djangorestframework==3.9.2
 djoser==1.5.1
 entrypoints==0.3
 flake8==3.7.7

@@ -3,11 +3,20 @@ from rest_framework.generics import (CreateAPIView,
 from rest_framework.response import Response
 from rest_framework import status
 from .models import Articles
+from .serializers import ArticlesSerializer, LikesSerializer
+from ..authentication.models import User
+from .models import Articles, Likes
+from rest_framework.generics import CreateAPIView, ListAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.views import APIView
+from django.contrib.contenttypes.models import ContentType
 from .serializers import ArticlesSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from .models import Rating
 from .serializers import RatingSerializer
+
+from rest_framework.renderers import JSONRenderer
 
 
 class CreateArticleView(CreateAPIView, ListAPIView):
@@ -95,3 +104,95 @@ class RatingView(CreateAPIView, ListAPIView):
                     "error": "Please login"
                 }, status=status.HTTP_403_FORBIDDEN
             )
+
+
+class LikeView(APIView):
+
+    """creating and updating likes
+    """
+    permission_classes = (IsAuthenticated,)
+    queryset = None
+    serializer_class = LikesSerializer
+
+    def post(self, request, slug, *args, **kwargs):
+        """Like
+        Arguments:
+            request {[type]} -- [description]
+            slug {[type]} -- [description]
+        """
+        actions = {'like': 1, 'dislike': -1}
+        data = request.data
+        data['user'] = request.user.id
+
+        action = data.get('action', None)
+        if not action:
+            return Response({'Errors': 'Action not found'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        article = get_object_or_404(Articles, slug=slug)
+        article_id = article.pk
+
+        actiondb = actions.get(action, 0)
+        updatefields = {'like': actiondb}
+        likeDict = dict(user=request.user,
+                        article=article, like=actiondb)
+
+        try:
+            like = Likes.objects.get(
+                user=request.user, article=article)
+            like.like = actiondb
+            like.save()
+        except Likes.DoesNotExist:
+            like = Likes(**likeDict)
+            like.save()
+        except IntegrityError:
+            return Response({'Errors': 'Something went wrong'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        articleS = ArticlesSerializer(instance=article)
+        count = self.countLikes(article_id)
+        return Response(count, status=status.HTTP_200_OK)
+
+    def get(self, request, slug, type=None, *args, **kwargs):
+        article = get_object_or_404(Articles, slug=slug)
+        article_id = article.pk
+
+        count = self.countLikes(article_id)
+        if type == 'count':
+
+            return Response(count, status=status.HTTP_200_OK)
+
+        l_serialize = LikesSerializer(self.l_queryset, many=True)
+        d_serialize = LikesSerializer(self.d_queryset, many=True)
+        import json
+        likes = json.loads(JSONRenderer().render(l_serialize.data))
+        dislikes = json.loads(JSONRenderer().render(d_serialize.data))
+        print(dislikes)
+
+        likesDict = {'likes': likes, 'dislikes': dislikes, 'count': count
+                     }
+        return Response(likesDict, status=status.HTTP_200_OK)
+
+    def delete(self, request, slug, *args, **kwargs):
+
+        article = get_object_or_404(Articles, slug=slug)
+        article_id = article.pk
+        try:
+            like = Likes.objects.get(
+                user=request.user, article=article)
+            like.delete()
+        except Likes.DoesNotExist:
+            return Response({'Errors': 'You have not liked this Article'},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        count = self.countLikes(article_id)
+        return Response(count, status=status.HTTP_200_OK)
+
+    def countLikes(self, article_id):
+        self.l_queryset = Likes.objects.likes().filter(article=article_id)
+        self.d_queryset = Likes.objects.dislikes().filter(article=article_id)
+        likesCount = self.l_queryset.count()
+        dislikesCount = self.d_queryset.count()
+        count = {'likes': likesCount,
+                 'dislikes': dislikesCount,
+                 'total': likesCount+dislikesCount}
+        return count

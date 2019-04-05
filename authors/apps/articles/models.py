@@ -1,6 +1,8 @@
 from django.db import models
+from django.utils.text import slugify
 from authors.apps.authentication.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django.contrib.contenttypes.fields import GenericRelation
 
 
 from authors.apps.utils.slug_generator import Slug
@@ -49,7 +51,6 @@ class Articles(models.Model):
             if self.old_fields != self.fields and self.fields:
                 self.updated_at = datetime.now()
         super().save(*args, **kwargs)
-    created_at = models.DateField(auto_now_add=True)
 
 
 class Rating(models.Model):
@@ -57,3 +58,29 @@ class Rating(models.Model):
     user_id = models.ForeignKey(User, on_delete=models.CASCADE)
     rating = models.IntegerField(validators=[MaxValueValidator(5),
                                              MinValueValidator(0)])
+
+
+class LikesManager(models.Manager):
+    """Extend the default manager to help get likes and dislikes
+    """
+
+    def likes(self):
+        return self.get_queryset().filter(like=1)
+
+    def dislikes(self):
+        return self.get_queryset().filter(like=-1)
+
+
+class Likes(models.Model):
+    """Like model for the app
+    """
+    article = models.ForeignKey(Articles, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    like = models.SmallIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = LikesManager()
+
+    class Meta:
+        unique_together = (("article", "user"),)

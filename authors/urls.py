@@ -47,4 +47,7 @@ urlpatterns = [
     url('api/', include(('authors.apps.articles.urls',
                          'articles'),
                         namespace='articles')),
+    url('api/', include(('authors.apps.comments.urls',
+                         'comments'),
+                        namespace='comments')),
 ]

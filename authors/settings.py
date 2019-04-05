@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'authors.apps.profiles',
     'authors.apps.reactions',
     'authors.apps.articles',
+    'authors.apps.comments',
 
     'drf_yasg',
     'django_inlinecss',

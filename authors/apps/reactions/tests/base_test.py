@@ -110,7 +110,6 @@ class BaseTestCase(APITestCase):
         """
 
         path = self.get_article_slug(created=True)
-        # res = self.post_article_comment(path)
 
         resp = self.client.get(path)
         return resp.json().get('comments').get('data')[0].get('id')

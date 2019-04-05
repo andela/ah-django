@@ -35,6 +35,13 @@ class JWTokens(object):
 
         return generated_token
 
+    def generate_jwt_token(self, user):
+        """
+            Enodes a JWT token using the user object's username
+        """
+        return jwt.encode({'username': user.username},
+                          settings.SECRET_KEY).decode('utf-8')
+
 
 class JWTAuthentication(BaseAuthentication):
     """docstring for JWTAthentication"""
@@ -57,9 +64,10 @@ class JWTAuthentication(BaseAuthentication):
         try:
             auth_payload = jwt.decode(token, settings.SECRET_KEY)
         except Exception as ex:
-            exceptions.AuthenticationFailed(ex)
+            raise exceptions.AuthenticationFailed(ex)
             print(ex)
-        user = User.objects.get(email=auth_payload.get('email'))
+        user = User.objects.filter(email=auth_payload.get('email')).first()
         if not user:
-            user = User.objects.get(username=auth_payload.get('username'))
+            user = User.objects.filter(
+                username=auth_payload.get('username')).first()
         return user, token

@@ -30,6 +30,7 @@ class BaseTestCase(APITestCase):
         self.registration_path = reverse('authentication:activation')
         self.new_article_path = reverse('articles:new_article')
         self.articles_feed = reverse('articles:articles_feed')
+        self.profile_url = reverse('profiles:list_profiles')
         self.username = 'testguy99'
         self.email = 'testguy99'
         self.testuser = User.objects.create_user(self.username, self.email)
@@ -47,6 +48,38 @@ class BaseTestCase(APITestCase):
             'authentication:social_authentication')
         self.factory = RequestFactory()
         self.forgot_password_url = reverse('authentication:forgot_password')
+
+        self.user1 = {
+            "user": {
+                "username": "green",
+                "email": "green@gmail.com",
+                "password": "greenlantern1#"
+            }
+        }
+        self.user2 = {
+            "user": {
+                "username": "yellantern",
+                "email": "yellantern@gmail.com",
+                "password": "yellantern1#"
+            }
+        }
+        self.user3 = {
+            "user": {
+                "username": "purple",
+                "email": "purple@gmail.com",
+                "password": "purple1#"
+            }
+        }
+        self.user4 = {
+            "user": {
+                "username": "blue",
+                "email": "blue@gmail.com",
+                "password": "purple1#"
+            }
+        }
+        self.first_name = {
+            "first_name": "wanyonyi"
+        }
 
         self.user_to_register = {
             'user': {
@@ -113,6 +146,7 @@ class BaseTestCase(APITestCase):
         self.reset_password_correct_email = {
             "email": "cow@mammals.milk",
         }
+        self.mockuser = User.objects.create_user('username', 'username')
 
     def register_new_user(self, data={}):
         """

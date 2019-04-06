@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_inlinecss',
     'social_django',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -252,3 +253,10 @@ SOCIAL_AUTH_FACEBOOK_PROFILE_EXTRA_PARAMS = {
 SOCIAL_AUTH_TWITTER_KEY = os.getenv('TWITTER_KEY')
 SOCIAL_AUTH_TWITTER_SECRET = os.getenv('TWITTER_SECRET')
 SOCIAL_AUTH_TWITTER_SCOPE = ['email']
+
+CLOUDINARY = {
+    'cloud_name': os.getenv('CLOUDINARY_NAME'),
+    'api_key': os.getenv('CLOUDINARY_KEY'),
+    'api_secret': os.getenv('CLOUDINARY_SECRET'),
+    'secure': True
+}

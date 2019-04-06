@@ -39,7 +39,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
         # or response, including fields specified explicitly above.
         # Include all needed fields
         fields = (
-            "username", "email", "photo", "password", "token"
+            "username", "email", "password", "token"
         )
 
     def create(self, validated_data):

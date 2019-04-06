@@ -35,18 +35,17 @@ SchemaView = get_schema_view(
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^apidocs$',
-        SchemaView.with_ui('swagger',
-                           cache_timeout=0), name='schema-swagger-ui'),
-    url(r'api/', include(('authors.apps.authentication.urls',
-                          'authentication'),
-                         namespace='authentication')),
-    url(r'api/', include(('authors.apps.reactions.urls',
-                          'reactions'),
-                         namespace='reactions')),
-    url('api/', include(('authors.apps.articles.urls',
-                         'articles'),
-                        namespace='articles')),
-    url('api/', include(('authors.apps.comments.urls',
-                         'comments'),
-                        namespace='comments')),
+        SchemaView.with_ui(
+            'swagger', cache_timeout=0), name='schema-swagger-ui'),
+    url(r'api/', include(
+        ('authors.apps.reactions.urls', 'reactions'), namespace='reactions')),
+    url(r'api/', include(
+        ('authors.apps.articles.urls', 'articles'), namespace='articles')),
+    url(r'api/', include(
+        ('authors.apps.comments.urls', 'comments'), namespace='comments')),
+    url(r'api/', include((
+        'authors.apps.authentication.urls', 'authentication'),
+            namespace='authentication')),
+    url(r'api/', include(
+        ('authors.apps.profiles.urls', 'profiles'), namespace='profiles')),
 ]

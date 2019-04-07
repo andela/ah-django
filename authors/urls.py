@@ -45,7 +45,9 @@ urlpatterns = [
         ('authors.apps.comments.urls', 'comments'), namespace='comments')),
     url(r'api/', include((
         'authors.apps.authentication.urls', 'authentication'),
-            namespace='authentication')),
+        namespace='authentication')),
     url(r'api/', include(
         ('authors.apps.profiles.urls', 'profiles'), namespace='profiles')),
+    url(r'api/', include(('authors.apps.followers.urls',
+                          'followers'), namespace='followers'))
 ]

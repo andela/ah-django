@@ -32,7 +32,6 @@ SchemaView = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
-
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^apidocs$',

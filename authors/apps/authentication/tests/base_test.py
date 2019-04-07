@@ -8,6 +8,7 @@ from django.test.client import RequestFactory
 from rest_framework_jwt.compat import get_user_model
 
 import django
+import os
 
 django.setup()
 
@@ -23,6 +24,8 @@ class BaseTestCase(APITestCase):
         """
             Creates reusable mock data and test functions.
         """
+
+
         self.client = APIClient()
         self.registration_path = reverse('authentication:activation')
         self.new_article_path = reverse('articles:new_article')
@@ -40,6 +43,8 @@ class BaseTestCase(APITestCase):
         self.login_path = reverse('authentication:login')
         self.article_rating = reverse('articles:rate_article',
                                       kwargs={'slug': "test-slug"})
+        self.social_auth_path = reverse(
+            'authentication:social_authentication')
         self.factory = RequestFactory()
         self.forgot_password_url = reverse('authentication:forgot_password')
 
@@ -49,6 +54,42 @@ class BaseTestCase(APITestCase):
                 'email': 'cow@mammals.milk',
                 'password': 'badA55mammal!'
             }
+        }
+        self.google_social_auth = {
+            "token_provider": "google-oauth2",
+            "access_token": 'access_token'
+        }
+
+        self.facebook_social_auth = {
+            "token_provider": "facebook",
+            "access_token": 'EAAGCNgo8jC4BACqTMo' +
+                            '272cv6RQzDgVPzwKAb1ppiL6' +
+                            'UTg37ZBCJKVEqg3Vn9YfBGxD' +
+                            'sGFg4hc3IydIzxQ2cxzN5kn' +
+                            'SQlOeaa6s4iMFL6z3zik1G7' +
+                            'SERGJ40ZB2XAOaFKcRttNGc' +
+                            'pr4BMKnavMKi9F1VDZC46TW' +
+                            'hRZBsTHc30L2nh85VehTHn'
+        }
+
+        self.facebook_social_wrong_auth = {
+            "token_provider": "facebook",
+            "access_token": 'EAAGCNgo8jC4BACqTMo'
+        }
+
+        self.twitter_social_auth = {
+            "token_provider": "twitter",
+            "access_token": 'access_token',
+            "access_token_secret": 'access_token_secret'
+        }
+        self.google_wrong_token = {
+            "token_provider": "google-oauth2",
+            "access_token": 'wrongtoken!!'
+        }
+
+        self.google_invali_provider = {
+            "token_provider": "invalidprovider",
+            "access_token": os.environ.get('GOOGLE_TOKEN')
         }
 
         self.user = {

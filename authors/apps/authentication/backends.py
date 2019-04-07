@@ -1,5 +1,6 @@
 from django.conf import settings
 from rest_framework_jwt.settings import api_settings
+from datetime import datetime
 
 from rest_framework import exceptions
 from rest_framework.authentication import (
@@ -41,6 +42,20 @@ class JWTokens(object):
         """
         return jwt.encode({'username': user.username},
                           settings.SECRET_KEY).decode('utf-8')
+
+    def generate_token_social_auth(self, user):
+        """
+        Generates a token with the user details
+        """
+
+        token_payload = {
+            'user': user,
+            'iat': datetime.utcnow()
+        }
+        return jwt.encode(
+            token_payload,
+            settings.SECRET_KEY
+        ).decode('UTF-8')
 
 
 class JWTAuthentication(BaseAuthentication):

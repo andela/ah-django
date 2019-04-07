@@ -184,3 +184,15 @@ class ResetPasswordSerializer(serializers.Serializer):
                 data):
             raise serializers.ValidationError(
                 "Password must have letters, numbers and special characters")
+
+
+class SocialAuthSerializer(serializers.Serializer):
+    """
+    Validates the token from the social platform
+    and converts the data to json
+    """
+
+    token_provider = serializers.CharField(max_length=255, required=True)
+    access_token = serializers.CharField(required=True, trim_whitespace=True)
+    access_token_secret = serializers.CharField(
+        max_length=300, allow_null=True, default=None, trim_whitespace=True)

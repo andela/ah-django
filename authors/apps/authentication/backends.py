@@ -1,14 +1,13 @@
+from django.conf import settings
 from rest_framework_jwt.settings import api_settings
 
+from rest_framework import exceptions
+from rest_framework.authentication import (
+    get_authorization_header, BaseAuthentication)
 
-class JWTAuthentication(object):
-    """
-    docstring for JWTAthentication
-    """
+import jwt
 
-    def __init__(self, arg):
-        super(JWTAuthentication, self).__init__()
-        self.arg = arg
+from .models import User
 
 
 class JWTokens(object):
@@ -37,11 +36,30 @@ class JWTokens(object):
         return generated_token
 
 
-class JWTAuthentication(object):
+class JWTAuthentication(BaseAuthentication):
     """docstring for JWTAthentication"""
 
-    def __init__(self):
-        pass
-
     def authenticate(self, request):
-        pass
+        """
+            Custom token auth backend
+        """
+        payload = get_authorization_header(request).split()
+        if not payload or payload[0].decode().lower() != 'bearer':
+            return None
+        if len(payload) != 2:
+            raise exceptions.AuthenticationFailed('Invalid token')
+        return self.authenticate_user(payload[1].decode('utf-8'))
+
+    def authenticate_user(self, token):
+        """
+            Decodes the auth token
+        """
+        try:
+            auth_payload = jwt.decode(token, settings.SECRET_KEY)
+        except Exception as ex:
+            exceptions.AuthenticationFailed(ex)
+            print(ex)
+        user = User.objects.get(email=auth_payload.get('email'))
+        if not user:
+            user = User.objects.get(username=auth_payload.get('username'))
+        return user, token

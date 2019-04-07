@@ -99,4 +99,5 @@ db.sqlite3
 .vscode
 
 # Migrations
-*migrations
+#*migrations
+*000*

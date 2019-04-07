@@ -50,6 +50,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)
+    token = serializers.CharField(max_length=1024, read_only=True)
 
     # On log in, the user should be able to get a token
     token = serializers.CharField(read_only=True)

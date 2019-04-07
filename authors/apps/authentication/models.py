@@ -1,9 +1,5 @@
 # Import JWTokens from the backends file
-from .backends import JWTokens
-import jwt
 
-from datetime import datetime, timedelta
-from django.conf import settings
 from django.contrib.auth.models import (
     AbstractBaseUser, BaseUserManager, PermissionsMixin
 )
@@ -34,7 +30,7 @@ class UserManager(BaseUserManager):
         # Having saved the user details,
         # we use the information to generate the tokens
         # This token will however not be saved in the database.
-        user.token = JWTokens.generate_token(self, user)
+        # user.token = JWTokens.generate_token(self, user)
         user.save()
         return user
 
@@ -92,7 +88,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
 
     # More fields required by Django when specifying a custom user model
-    bio = models.CharField(max_length=255)
+    # bio = models.CharField(max_length=255)
     photo = models.ImageField(upload_to='uploads', blank=True)
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.

@@ -1,5 +1,20 @@
-from . import models
 from rest_framework import serializers
+from . import models
+from django.db.models import Avg
+
+
+class RateArticleSerializer(serializers.ModelSerializer):
+    """Rate articles serializer"""
+
+    class Meta:
+        """Rate articles model meta fields"""
+        model = models.ArticleRating
+        fields = ('id',
+                  'rater',
+                  'article',
+                  'rating')
+        unique_together = ('rater', 'rating',)
+        read_only_fields = ('article', 'rater')
 
 
 class ArticleSerializer(serializers.ModelSerializer):
@@ -10,6 +25,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False)
     tagList = serializers.ListField(
         required=False)
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         """Articles model meta fields"""
@@ -18,8 +34,16 @@ class ArticleSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'url': {'lookup_field': 'slug'}
         }
-        read_only_fields = ('author',)
+        read_only_fields = ('author', 'rating')
         model = models.Article
+
+    def get_rating(self, slug):
+        rating = models.ArticleRating.objects.filter(article=slug) \
+            .aggregate(Avg('rating'))
+        if not rating['rating__avg']:
+            rating = 0
+            return rating
+        return rating['rating__avg']
 
     def get_likes(self, inst):
         return inst.user_reaction.likes.count()

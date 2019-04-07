@@ -136,3 +136,39 @@ class ArticleDetails(BaseTestCase):
         """
         response = self.client.put(self.article_details)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_rate_article(self):
+        """
+        test rate article
+        """
+        rating = {
+            "rating": {
+                "rating": 4
+            }
+        }
+
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        response = self.client.post(self.article_rating,
+                                    rating, HTTP_AUTHORIZATION=auth,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_invalid_rate_article(self):
+        """
+        test rate article invalid
+        """
+        rating = {
+            "rating": {
+                "rating": 23
+            }
+        }
+
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        response = self.client.post(self.article_rating,
+                                    rating, HTTP_AUTHORIZATION=auth,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

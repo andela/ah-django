@@ -38,6 +38,8 @@ class BaseTestCase(APITestCase):
         self.article_details = reverse('articles:article_details',
                                        kwargs={'slug': "test-slug"})
         self.login_path = reverse('authentication:login')
+        self.article_rating = reverse('articles:rate_article',
+                                      kwargs={'slug': "test-slug"})
         self.factory = RequestFactory()
         self.forgot_password_url = reverse('authentication:forgot_password')
 

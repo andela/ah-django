@@ -21,3 +21,10 @@ class Article(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class ArticleRating(models.Model):
+    """Ratings model"""
+    rater = models.ForeignKey(User, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    rating = models.IntegerField()

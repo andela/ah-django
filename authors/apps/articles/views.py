@@ -1,12 +1,15 @@
-from rest_framework import generics, status, mixins, permissions
+from rest_framework import generics, status, mixins, exceptions
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from .models import Article, ArticleRating
+from .serializers import ArticleSerializer, RateArticleSerializer
 from .models import Article
 from .serializers import ArticleSerializer
 from ..core.permissions import IsOwnerOrReadOnly
 from django.template.defaultfilters import slugify
+from django.db.models import Avg
 
 
 class NewArticle(APIView):
@@ -64,4 +67,60 @@ class ArticleDetails(generics.RetrieveAPIView, mixins.UpdateModelMixin,
     def delete(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
-        return Response({"detail": "article deleted"})
+        return Response({"detail": "article deleted"},
+                        status=status.HTTP_200_OK)
+
+
+class ArticleInst:
+    """
+        Provides a helper method of retireving
+        the article to commment on
+    """
+
+    @classmethod
+    def fetch(cls, slug):
+        """
+            Retrieves an article instance by slug
+        """
+        try:
+            article = Article.objects.get(slug=slug)
+        except Article.DoesNotExist:
+            raise exceptions.NotFound(f'Article with slug {slug} nonexistent')
+        else:
+            return article
+
+
+class RateArticle(generics.CreateAPIView):
+    """
+        Allows user to post reactions to an
+        article
+    """
+    serializer_class = RateArticleSerializer
+    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+
+    def post(self, request, slug):
+        """ post:
+
+            Rates an article
+
+        Rates an article with matching slug
+        """
+        article = ArticleInst.fetch(slug)
+        rating = request.data.get('rating', {})
+        serializer = self.serializer_class(data=rating)
+        serializer.is_valid(raise_exception=True)
+
+        if not isinstance(rating['rating'], int):
+            return Response({"error": "rating must be an int"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if rating['rating'] > 5 or rating['rating'] < 1:
+            return Response({"error": "rating must be 1-5"},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        ArticleRating.objects.update_or_create(
+            article=article, rater=request.user, defaults=rating)
+        avg = ArticleRating.objects.filter(article=article) \
+            .aggregate(Avg('rating'))
+        return Response({"detail": "rating posted", "avg": avg['rating__avg']},
+                        status=status.HTTP_201_CREATED)

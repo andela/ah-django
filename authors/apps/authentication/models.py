@@ -11,7 +11,6 @@ class UserManager(BaseUserManager):
     Django requires that custom users define their own Manager class. By
     inheriting from `BaseUserManager`, we get a lot of the same code used by
     Django to create a `User` for free.
-
     All we have to do is override the `create_user` function which we will use
     to create `User` objects.
     """
@@ -37,7 +36,6 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, email, password):
         """
         Create and return a `User` with superuser powers.
-
         Superuser powers means that this use is an admin that can do anything
         they want.
         """
@@ -51,7 +49,6 @@ class UserManager(BaseUserManager):
 
         return user
 
-    # This is the method that the library uses to retrieve user object
     def get_by_natural_key(self, username):
         return self.get(username=username)
 
@@ -89,7 +86,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # More fields required by Django when specifying a custom user model
     # bio = models.CharField(max_length=255)
-    photo = models.ImageField(upload_to='uploads', blank=True)
+    # photo = models.ImageField(upload_to='uploads', blank=True)
 
     # The `USERNAME_FIELD` property tells us which field we will use to log in.
     # In this case, we want that to be the email field.
@@ -103,7 +100,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         """
         Returns a string representation of this `User`.
-
         This string is used when a `User` is printed in the console.
         """
         return self.email

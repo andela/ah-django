@@ -96,7 +96,7 @@ class RateArticle(generics.CreateAPIView):
         article
     """
     serializer_class = RateArticleSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
 
     def post(self, request, slug):
         """ post:

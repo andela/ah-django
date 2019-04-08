@@ -136,3 +136,20 @@ class TestComment(CommentsBaseTestCase):
         resp = self.client.get(f'{path}/{comment_path}')
         self.assertEqual(resp.json().get('comments').get(
             'error'), 'Comment of ID 404 nonexistent')
+
+    def test_create_comment_with_invalid_body(self):
+        """
+           Validate: comment shouldn't be made of characters
+           only
+        """
+
+        path = self.get_article_slug()
+        comment = {
+            'comment': {
+                'body': "5)))89"
+            }
+        }
+        res = self.post_article_comment(path, data=comment)
+
+        self.assertIn("Provide a readable comment, cool?",
+                      res.json().get('comments') .get('errors').get('body')[0])

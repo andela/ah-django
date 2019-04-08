@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from . import models
+from ..comments.models import Comment
 from django.db.models import Avg
 
 
@@ -26,6 +27,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     tagList = serializers.ListField(
         required=False)
     rating = serializers.SerializerMethodField()
+    comments = serializers.SerializerMethodField()
 
     class Meta:
         """Articles model meta fields"""
@@ -53,6 +55,12 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def get_like_popularity(self, inst):
         return inst.user_reaction.fetch_popularity_status(avg=True)
+
+    def get_comments(self, inst):
+        query = Comment.objects.filter(article=inst).values()
+        return [
+            (comment.get('id'), comment.get('body')) for comment in list(query)
+        ]
 
     def __repr__(self):
         return self.body

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'authors.apps.articles',
     'authors.apps.comments',
     'authors.apps.followers',
+    'authors.apps.favorites',
 
     'drf_yasg',
     'django_inlinecss',

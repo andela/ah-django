@@ -49,5 +49,7 @@ urlpatterns = [
     url(r'api/', include(
         ('authors.apps.profiles.urls', 'profiles'), namespace='profiles')),
     url(r'api/', include(('authors.apps.followers.urls',
-                          'followers'), namespace='followers'))
+                          'followers'), namespace='followers')),
+    url(r'api/', include(('authors.apps.favorites.urls',
+                          'favorites'), namespace='favorites'))
 ]

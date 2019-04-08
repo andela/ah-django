@@ -1,5 +1,4 @@
 import re
-
 from .backends import JWTokens
 from django.contrib.auth import authenticate
 from rest_framework import serializers

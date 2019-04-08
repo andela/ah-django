@@ -38,9 +38,7 @@ from .serializers import (
 class RegistrationAPIView(APIView):
     # Allow any user (authenticated or not) to hit this endpoint.
     """ post:
-
         Register a user
-
     Creates a new user instance
     """
     permission_classes = (AllowAny,)
@@ -103,9 +101,7 @@ class RegistrationAPIView(APIView):
 
 class LoginAPIView(APIView):
     """ post:
-
         Logs in a user
-
     Provided a valid password and email, logs the user into the system
     """
     permission_classes = (AllowAny,)
@@ -136,19 +132,13 @@ class LoginAPIView(APIView):
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
     """ get:
-
         Retrieves a single user
-
     Provided an id, retrieves a user from the system
-
     put:
         Update all details of a user
-
     Updates all user information in the system
-
     patch:
         Update a single detail of a user
-
     Updates part of the information by the user
     """
 
@@ -329,8 +319,8 @@ class SocialAuth(CreateAPIView):
                 access_token = {
                     "oauth_token": serializer.data.get('access_token'),
                     "oauth_token_secret": serializer.data.get(
-                            'access_token_secret'
-                        )
+                        'access_token_secret'
+                    )
                 }
             elif isinstance(backend, BaseOAuth2):
                 # oath2 only contains the access_token

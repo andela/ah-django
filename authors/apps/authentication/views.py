@@ -3,22 +3,26 @@ from .serializers import (
     LoginSerializer, RegistrationSerializer, UserSerializer,
     ForgotPasswordSerializer, ResetPasswordSerializer,
     SocialAuthSerializer)
+from .renderers import UserJSONRenderer, AccountActivationRenderer
+from .models import User
+from .backends import JWTokens
+from .backends import authenticate
+from authors.apps.core import client
 
-from .renderers import UserJSONRenderer
 from rest_framework import status
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.generics import RetrieveUpdateAPIView, RetrieveAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import exceptions
+
+
 from drf_yasg.utils import swagger_auto_schema
-from .models import User
+
 from django.conf import settings
-from authors.apps.core import client
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 from django.core.mail import EmailMultiAlternatives
-from rest_framework import exceptions
-from .backends import JWTokens
 from requests.exceptions import HTTPError
 
 from social_django.utils import load_backend, load_strategy
@@ -26,13 +30,9 @@ from social_core.exceptions import (
     MissingBackend, AuthTokenError, AuthForbidden)
 from social_core.backends.oauth import BaseOAuth1, BaseOAuth2
 from rest_framework.generics import CreateAPIView
+
 import jwt
 import os
-
-from .serializers import (
-    LoginSerializer, RegistrationSerializer, UserSerializer,
-    ForgotPasswordSerializer, ResetPasswordSerializer
-)
 
 
 class RegistrationAPIView(APIView):
@@ -59,19 +59,17 @@ class RegistrationAPIView(APIView):
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
 
-        JWT_payload = {'username': user.get("username")}
-        # This line generates the token
-        JWT_token = jwt.encode(JWT_payload, settings.SECRET_KEY,
-                               algorithm='HS256').decode()
-
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
+        user = User.objects.get(username=user.get('username'))
+        token = JWTokens.generate_token(self, user)
+
         mail_helper(request=request)
         activation_link = mail_helper.get_link(
             path='activate',
-            token=serializer.data.get('token', JWT_token)
+            token=serializer.data.get('token', token)
         )
 
         mail_helper.send_mail(
@@ -90,7 +88,7 @@ class RegistrationAPIView(APIView):
                        }
 
         data = serializer.data
-        data['token'] = JWT_token
+        data['token'] = token
 
         res_message['data'] = data
 
@@ -128,6 +126,34 @@ class LoginAPIView(APIView):
         serializer.is_valid(raise_exception=True)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class VerifyUserAPIView(RetrieveAPIView):
+    """
+        Verifies the account of a registered user
+    """
+    serializer_class = UserSerializer
+    permission_classes = (AllowAny,)
+    renderer_classes = (AccountActivationRenderer,)
+
+    def get(self, request, auth_payload):
+        """
+            Retrieves the token from the url
+            for use in activating the User (sender)
+            of the request
+        """
+        user, _ = authenticate.authenticate_user(auth_payload)
+
+        user.is_verified = True if not user.is_verified else user.is_verified
+        user.save(update_fields=['is_verified'])
+
+        response = {
+            'message': f'Success. Account of email {user.email}' +
+            ' is now verified'
+        }
+
+        return Response(data=response,
+                        status=status.HTTP_200_OK)
 
 
 class UserRetrieveUpdateAPIView(RetrieveUpdateAPIView):
@@ -294,7 +320,7 @@ class SocialAuth(CreateAPIView):
         # token provider is the source of our token(socia site)
         token_provider = serializer.data.get('token_provider', None)
 
-        # Thia creates the app instance
+        # This creates the app instance
         strategy = load_strategy(request)
         try:
             # Backends are important for authentications

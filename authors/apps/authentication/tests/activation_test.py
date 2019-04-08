@@ -25,7 +25,6 @@ class TestMail(BaseTestCase):
                 EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
             res = self.register_new_user(data=self.user_to_register)
         outbox = mail.outbox[0]
-        print(res)
 
         self.assertIn(success_msg, res.data.get('message'))
         self.assertEqual(outbox.subject, 'Activate Account')
@@ -48,7 +47,34 @@ class TestMail(BaseTestCase):
                 EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
             respose = self.register_new_user(data=self.user_to_register)
         site = get_current_site(request_ctx).domain
+        base = 'api/users'
         append_ = respose.data.get('token', '')
-        verification_url = f"http://{site}/activate/{append_}"
+        verification_url = f"http://{site}/{base}/activate/{append_}"
 
         self.assertIn(verification_url, mail.outbox[0].body)
+
+    def test_verify_account_of_registered_user(self):
+        """
+            Verifies: After sending of the account activation
+            link, opening the link activates the user account
+        """
+
+        request_ctx = self.factory.post(self.registration_path,
+                                        self.user_to_register,
+                                        format='json')
+
+        with self.settings(
+                EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
+            res = self.register_new_user(data=self.user_to_register)
+
+        # Get the link sent
+        site = get_current_site(request_ctx).domain
+        base = '/api/users'
+        append_ = res.json().get('user').get('data').get('token', '')
+        verification_url = f"http://{site}/{base}/activate/{append_}/"
+
+        response = self.client.get(verification_url)
+
+        self.assertIn('verified',
+                      response.json().get('verification').get('message')
+                      )

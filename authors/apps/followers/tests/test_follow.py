@@ -23,7 +23,7 @@ class FollowerTestCase(FollowerBaseTest):
         with self.settings(
                 EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
             self.register_user(self.user1)
-        response = self.client.post(self.follow_url, format='json')
+            response = self.client.post(self.follow_url, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_follow_non_existent_user(self):

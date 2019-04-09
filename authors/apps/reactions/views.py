@@ -10,6 +10,8 @@ from .serializers import ReactionSerializer
 from .models import UserReaction
 from .renderers import ReactionRenderer
 from authors.apps.articles.models import Article
+from authors.apps.comments.views import CommentAPIView, ArticleInst
+from .helpers import dislikeReaction
 
 
 class UserReactionView(CreateAPIView):
@@ -29,40 +31,11 @@ class UserReactionView(CreateAPIView):
             from an autheticated user.
         """
         expressed_article = self.get_article(slug)
-        try:
-            like_status = UserReaction.objects.get(
-                content_type=ContentType.objects.get_for_model(
-                    expressed_article),
-                object_id=expressed_article.id,
-                user=request.user
-            )
-            status_ = status.HTTP_200_OK
-
-            if like_status.user_reaction is not self.reaction:
-                like_status.user_reaction = self.reaction
-                like_status.save(update_fields=['user_reaction'])
-                msg = 'Reaction changed'
-            else:
-                like_status.delete()
-                msg = 'Reaction Removed'
-        except UserReaction.DoesNotExist:
-            expressed_article.user_reaction.create(
-                user_reaction=self.reaction,
-                user=request.user)
-            msg = "Reaction Created"
-            status_ = status.HTTP_201_CREATED
-
-        response = {'message': msg}
-        data = {
-            'article': slug,
-            'likes': expressed_article.
-            user_reaction.likes.count(),
-            'dislikes': expressed_article.
-            user_reaction.dislikes.count(),
-            'participated_users': expressed_article.
-            user_reaction.fetch_popularity_status()
-        }
-        response['data'] = data
+        response, status_ = dislikeReaction.mofidy_reaction(
+            expressed_article,
+            request.user,
+            self.reaction,
+            'article')
 
         return Response(
             response,
@@ -80,3 +53,29 @@ class UserReactionView(CreateAPIView):
             raise exceptions.NotFound(f'Article of title {art} seems missing')
         else:
             return article
+
+
+class CommentsLikeReactionAPIView(CreateAPIView):
+    """
+        Handles posting of likes and dislikes to
+        comments
+    """
+    serializer = ReactionSerializer
+    reaction = None
+    model = None
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    renderer_classes = (ReactionRenderer,)
+
+    def post(self, request, slug, id):
+        article = ArticleInst.fetch(slug)
+        comment = CommentAPIView.check_comment(id, article)
+
+        data, status_ = dislikeReaction.mofidy_reaction(
+            instance=comment,
+            user=request.user,
+            inherited_react=self.reaction,
+            name='comment'
+        )
+
+        return Response(data=data,
+                        status=status_)

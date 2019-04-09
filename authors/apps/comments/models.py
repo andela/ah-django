@@ -4,6 +4,9 @@ from django.db.models.signals import post_save
 from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
 from authors.apps.notifications.signals import commented_on
+from django.contrib.contenttypes.fields import GenericRelation
+
+from authors.apps.reactions.models import UserReaction
 
 
 class Comment(models.Model):
@@ -17,6 +20,10 @@ class Comment(models.Model):
         Article, on_delete=models.CASCADE, related_name='article')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    user_reaction = GenericRelation(UserReaction, related_query_name='comment')
+
+    def __repr__(self):
+        return self.body
 
     class Meta:
         order_with_respect_to = 'article'

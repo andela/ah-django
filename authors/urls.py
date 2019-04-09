@@ -51,5 +51,9 @@ urlpatterns = [
     url(r'api/', include(('authors.apps.followers.urls',
                           'followers'), namespace='followers')),
     url(r'api/', include(('authors.apps.favorites.urls',
-                          'favorites'), namespace='favorites'))
+                          'favorites'), namespace='favorites')),
+    url(r'api/notifications/', include((
+        'authors.apps.notifications.urls',
+        'notifications'),
+        namespace='notifications')),
 ]

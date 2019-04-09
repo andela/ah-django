@@ -1,7 +1,9 @@
 from django.db import models
+from django.db.models.signals import post_save
 
 from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
+from authors.apps.notifications.signals import commented_on
 
 
 class Comment(models.Model):
@@ -45,3 +47,6 @@ class CommentReply(models.Model):
     class Meta:
         ordering = ('-created_at',)
         unique_together = ('body', 'comment_to', 'author')
+
+
+post_save.connect(commented_on, sender=Comment)

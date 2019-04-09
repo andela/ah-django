@@ -32,3 +32,28 @@ def create_profile(sender, **kwargs):
 
 
 post_save.connect(create_profile, sender=User)
+
+"""
+
+The FOLLOW model
+
+"""
+
+
+class Follow(models.Model):
+    """
+    the follow model definition.
+    """
+    user = models.ForeignKey(
+        User,
+        related_name='rel_from_set',
+        on_delete=models.CASCADE)
+
+    following = models.ForeignKey(
+        User,
+        related_name='rel_to_set',
+        on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'following')

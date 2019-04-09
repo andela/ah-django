@@ -1,0 +1,9 @@
+{% extends 'emailing_template.html' %}
+{% block body %}
+    <div id="email-verification">
+        <p id="greeting">Hello <span id="name">{{ username }}</span>,</p>
+               <p>{{ description }}</p>
+        <p>You are recieving this email because you have subscribed to Author's Haven notifications.</p>
+        <p>Unsubscribe now.</p>
+    </div>
+{% endblock %}

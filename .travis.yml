@@ -16,11 +16,11 @@ addons:
 
 before_script:
   - psql -c 'create database djangodb;' -U postgres
+  - python manage.py makemigrations
+  - python manage.py migrate
 
 script:
-  - ./manage.py makemigrations
-  - ./manage.py migrate
-  - pytest --cov=authors.apps
+  - coverage run --source='.' -m pytest auth*/apps/  && coverage report -m
 
 after_success:
   - coveralls

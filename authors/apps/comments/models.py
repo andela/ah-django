@@ -1,6 +1,8 @@
 from django.db import models
 from django.db.models.signals import post_save
 
+from simple_history.models import HistoricalRecords
+
 from authors.apps.articles.models import Article
 from authors.apps.authentication.models import User
 from authors.apps.notifications.signals import commented_on
@@ -24,6 +26,7 @@ class Comment(models.Model):
 
     def __repr__(self):
         return self.body
+    comment_history = HistoricalRecords()
 
     class Meta:
         order_with_respect_to = 'article'
@@ -35,8 +38,11 @@ class Comment(models.Model):
             Gives replies made to a comment
         """
         queryset = CommentReply.objects.filter(
-            comment_to__body=self.body).values()
-        return [item.get('body') for item in list(queryset)]
+            comment_to__body=self.body)
+
+        # return [
+        #    (item.get('id'), item.get('body')) for item in list(queryset)]
+        return queryset
 
 
 class CommentReply(models.Model):

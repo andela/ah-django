@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from . import models
 from ..comments.models import Comment
+from ..comments.serializers import CommentSerializer
 from django.db.models import Avg
 
 
@@ -57,10 +58,9 @@ class ArticleSerializer(serializers.ModelSerializer):
         return inst.user_reaction.fetch_popularity_status(avg=True)
 
     def get_comments(self, inst):
-        query = Comment.objects.filter(article=inst).values()
-        return [
-            (comment.get('id'), comment.get('body')) for comment in list(query)
-        ]
+
+        query = Comment.objects.filter(article=inst)
+        return CommentSerializer(query, many=True).data
 
     def __repr__(self):
         return self.body

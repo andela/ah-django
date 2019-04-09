@@ -153,3 +153,21 @@ class TestComment(CommentsBaseTestCase):
 
         self.assertIn("Provide a readable comment, cool?",
                       res.json().get('comments') .get('errors').get('body')[0])
+
+    def test_retrieve_comment_history(self):
+        """
+            Validate: History records of comments can be seen
+        """
+        comment_path = self.get_single_comment_path()
+        path = self.get_article_slug(created=True)
+        self.post_article_comment(path)
+
+        self.client.post(f'{path}/{comment_path}',
+                         data=self.comment, format='json')
+
+        resp = self.client.get(
+            f'{path}/{comment_path}/history')
+
+        self.assertIn('comment_history',
+                      resp.json().get('comments').keys(),
+                      )

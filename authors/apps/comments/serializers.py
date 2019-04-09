@@ -3,6 +3,7 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from authors.apps.comments.models import Comment, CommentReply
+from authors.apps.core.history import ModelHistory
 
 import re
 
@@ -41,7 +42,7 @@ class CommentSerializer(serializers.ModelSerializer):
         return inst.article.slug
 
     def get_replies(self, inst):
-        return inst.replies
+        return CommentReplySerializer(inst.replies, many=True).data
 
     def get_likes(self, inst):
         return inst.user_reaction.likes.count()
@@ -70,3 +71,21 @@ class CommentReplySerializer(serializers.ModelSerializer):
 
     def get_article(self, inst):
         return inst.article.title
+
+
+class CommentHistorySerializer(serializers.ModelSerializer):
+    comment_history = serializers.SerializerMethodField()
+    comment_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comment
+        fields = ('comment_id', 'comment_history')
+
+    def get_comment_history(self, inst):
+        return hist.get_update_records(inst.comment_history)
+
+    def get_comment_id(self, inst):
+        return inst.id
+
+
+hist = ModelHistory()

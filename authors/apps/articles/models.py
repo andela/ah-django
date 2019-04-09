@@ -1,9 +1,7 @@
 from django.db import models
-from django.utils.text import slugify
 from authors.apps.authentication.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django.contrib.contenttypes.fields import GenericRelation
-
+from django.contrib.postgres.fields import ArrayField
 
 from authors.apps.utils.slug_generator import Slug
 
@@ -15,10 +13,12 @@ class Articles(models.Model):
     description = models.TextField()
     body = models.TextField()
     image_url = models.TextField()
-    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    author = models.ForeignKey(User, on_delete=models.CASCADE,
+                               to_field='username')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=200, unique=True)
+    tags = ArrayField(models.CharField(max_length=20), default=list)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -6,6 +6,7 @@ from django.db.models import Avg
 class ArticlesSerializer(serializers.ModelSerializer):
     rating_count = serializers.SerializerMethodField(read_only=True, default=0)
     avg_rating = serializers.SerializerMethodField(read_only=True, default=0)
+    author = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Articles
@@ -21,7 +22,8 @@ class ArticlesSerializer(serializers.ModelSerializer):
             'updated_at',
             'slug',
             'avg_rating',
-            'rating_count'
+            'rating_count',
+            'tags'
         ]
         read_only_fields = ["id", "author", "slug", "created_at", "avg_rating",
                             "rating_count"]
@@ -38,6 +40,14 @@ class ArticlesSerializer(serializers.ModelSerializer):
         if qs['rating__avg'] is None:
             return 0
         return qs['rating__avg']
+
+    def get_author(self, obj):
+
+        return {
+            "username": obj.author.username,
+            "bio": obj.author.bio,
+            "image": obj.author.image
+        }
 
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -60,7 +70,7 @@ class LikesSerializer(serializers.ModelSerializer):
         model = Likes
         fields = ('id', 'article', 'user', 'like', 'created_at')
         read_only_fields = ("id", "article", "created_at", "user")
-        
+
     def create(self, validated_data):
         return Articles.objects.create(**validated_data)
 
@@ -77,3 +87,14 @@ class CommentsSerializer(serializers.ModelSerializer):
             'author'
         ]
         read_only_fields = ["id"]
+
+
+class TagsSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Articles
+        page_size = serializers.IntegerField()
+        fields = [
+            'id',
+            'tags'
+        ]

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'djoser',
+    'django_filters',
 
     'authors.apps.authentication',
     'authors.apps.core',
@@ -212,7 +213,7 @@ REST_FRAMEWORK = {
 
 }
 
-FROM_EMAIL = 'misochobrian@gmail.com'
+FROM_EMAIL = 'no-reply@authorshaven.com'
 
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': ('{protocol}//:{domain}/'

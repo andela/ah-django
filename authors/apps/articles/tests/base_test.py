@@ -14,6 +14,14 @@ class BaseTestCase(APITestCase):
                 "password": "testuserpass123"
             }
         }
+        self.user_signup2 = {
+            "user": {
+                "email": "testuser2@gmail.com",
+                "username": "testuser2",
+                "password": "testuser2pass123"
+            }
+        }
+
         self.article = {
             "article": {
                 "title": "This is the article title",
@@ -34,6 +42,12 @@ class BaseTestCase(APITestCase):
         self.signup = self.client.post(
             "/api/users",
             self.user_signup,
+            format="json"
+        )
+
+        self.signup2 = self.client.post(
+            "/api/users",
+            self.user_signup2,
             format="json"
         )
 

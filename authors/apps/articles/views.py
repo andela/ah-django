@@ -3,10 +3,11 @@ from rest_framework.generics import (CreateAPIView,
 from rest_framework.response import Response
 from rest_framework import status, pagination
 from rest_framework.pagination import PageNumberPagination
-from .models import Articles
-from .serializers import ArticlesSerializer, LikesSerializer, TagsSerializer
+from .models import (Articles, Likes, Rating, Comments, Favorites)
+from .serializers import (
+    ArticlesSerializer, LikesSerializer, RatingSerializer, CommentsSerializer,
+    FavoritesSerializer, TagsSerializer)
 from ..authentication.models import User
-from .models import Articles, Likes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.contenttypes.models import ContentType
@@ -17,8 +18,9 @@ from django_filters import rest_framework as filters
 from .filters import ArticleFilter
 
 from datetime import datetime
-
 from rest_framework.renderers import JSONRenderer
+from django_filters.rest_framework import DjangoFilterBackend
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class ArticlesPagination(PageNumberPagination):
@@ -40,6 +42,7 @@ class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
     ordering = ['-id']
     serializer_class = ArticlesSerializer
     pagination_class = ArticlesPagination
+
     filter_backends = (filters.DjangoFilterBackend,)
     filterset_class = ArticleFilter
 
@@ -70,6 +73,32 @@ class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
         pagination.PageNumberPagination.page_size = page_size
 
         return self.list(request, *args, **kwargs)
+
+    def get_queryset(self):
+        """
+            GET /api/v1/articles/favorites/
+        """
+
+        queryset = Articles.objects.get_queryset().order_by('id')
+        username = self.request.GET.get('favorited_by')
+        if username:
+            try:
+                user = User.objects.get(username=username)
+
+                favorites = Favorites.objects.filter(
+                    user=user.pk).values("article")
+                fav_list = list(favorites)
+                fav_items = []
+                for item in fav_list:
+                    fav_items.append(item.get('article'))
+
+                queryset = queryset.filter(id__in=fav_items)
+
+            except User.DoesNotExist:
+
+                return queryset.none()
+
+        return queryset
 
 
 class SingleArticleView(RetrieveUpdateDestroyAPIView):
@@ -314,8 +343,8 @@ class UpdateDeleteCommentView(RetrieveUpdateDestroyAPIView):
                     comm.update({'created_at': created})
 
                     serializer = self.serializer_class(
-                                    instance=comments[0], data=comm,
-                                    )
+                        instance=comments[0], data=comm,
+                    )
                     serializer.is_valid(raise_exception=True)
                     serializer.save()
                     return Response({'Comment': serializer.data},
@@ -348,7 +377,7 @@ class UpdateDeleteCommentView(RetrieveUpdateDestroyAPIView):
                                         status=status.HTTP_200_OK)
                     else:
                         return Response({"error":
-                                        "You cannot delete this comment"},
+                                         "You cannot delete this comment"},
                                         status=status.HTTP_403_FORBIDDEN)
                 else:
                     return Response(
@@ -377,3 +406,96 @@ class TagView(ListAPIView):
             for tag in taglist["tags"]:
                 result.append(tag)
         return Response(data={"tags": set(result)})
+
+
+class FavouritesView(APIView):
+    """
+        A user should be able to add an article to their favorites and 
+        or unfavorite the article
+    """
+    lookup_field = 'article_slug'
+    permission_classes = (IsAuthenticated,)
+    queryset = Favorites.objects.all()
+    serializer_class = FavoritesSerializer
+
+    def get(self, request, *args, **kwargs):
+        """
+            GET /api/v1/articles/favorites/
+        """
+        user = request.user.id
+        favorites = Favorites.objects.filter(user=user).all()
+        if favorites:
+            serializer = FavoritesSerializer(favorites, many=True)
+            return Response(
+                {
+                    "articles": serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {
+                    "status": 404,
+                    "error": "No existing article favorite(s)"
+                }, status=status.HTTP_404_NOT_FOUND
+            )
+
+    def post(self, request, article_slug):
+        """
+            POST /api/v1/articles/<article_slug>/favorite/
+        """
+        article = get_object_or_404(Articles, slug=article_slug)
+        article_id = article.pk
+
+        favorite = Favorites.objects.filter(
+            article=article_id, user=request.user.id).exists()
+        if favorite:
+
+            return Response(
+                {
+                    "status": 403,
+                    "error": "Article favorite exists"
+                }, status=status.HTTP_403_FORBIDDEN
+            )
+        else:
+            favorite_data = {
+                'user': request.user.id
+            }
+
+            serializer = self.serializer_class(
+                data=favorite_data
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save(article=article)
+            return Response(
+                {
+                    "article": serializer.data
+                },
+                status=status.HTTP_201_CREATED)
+
+    def delete(self, request, article_slug):
+        """
+            DELETE /api/v1/articles/<article_slug>/unfavorite/
+        """
+
+        article = get_object_or_404(Articles, slug=article_slug)
+        article_id = article.pk
+
+        favorite = Favorites.objects.filter(
+            article=article_id, user=request.user.id)
+        if favorite:
+
+            favorite.delete()
+            return Response(
+                {
+                    "message": 'Article favorite deleted'
+                },
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {
+                    "status": 404,
+                    "error": "Article favorite not found"
+                }, status=status.HTTP_404_NOT_FOUND
+            )

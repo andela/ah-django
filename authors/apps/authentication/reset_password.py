@@ -1,11 +1,9 @@
-import sendgrid
-import os
-from sendgrid.helpers.mail import Email, Content, Mail
-
 from django.conf import settings
 from django.contrib.sites.shortcuts import get_current_site
 
 from djoser.conf import settings as dj_settings
+
+from ..utils.mailer import Email
 
 
 class RecoverPassword:
@@ -44,29 +42,22 @@ class RecoverPassword:
         return context
 
     def send_email(self):
-
-        sg = sendgrid.SendGridAPIClient(
-            api_key=os.environ.get('SENDGRID_API_KEY'))
-        from_email = Email(settings.FROM_EMAIL)
-        to_email = Email(self.email)
+        to_email = [self.email]
         context = self.get_context_data()
         reset_link = dj_settings.PASSWORD_RESET_CONFIRM_URL.format(**context)
         user = context['user']
-        html_mss = """
-            <p>Hi {username},</p>
-            <p>Someone (hopefully you) has requested to reset your
+        message = """
+            Hi {username},
+            Someone (hopefully you) has requested to reset your
             Authors Haven Password.
-            Follow the link below to reset your password:<p>
-            <p>{reset_link}</p>
-            <p>If you do not wish to reset your password, disregard this
+            Follow the link below to reset your password:
+            {reset_link}
+            If you do not wish to reset your password, disregard this
             message and
-            no action will be taken</p>
-            <p>Regards,</p>
-            <p>Authors Haven team</p>
+            no action will be taken
+            Regards,
+            Authors Haven team
         """.format(username=user, reset_link=reset_link)
-        subject = "Reset password your Authors Haven password".format()
-        content = Content(
-            "text/html", html_mss)
-        mail = Mail(from_email, subject, to_email, content)
-        response = sg.client.mail.send.post(request_body=mail.get())
-        return response
+        subject = "Reset password your Authors Haven password"
+        email = Email(subject=subject, message=message, to_email=to_email)
+        email.send()

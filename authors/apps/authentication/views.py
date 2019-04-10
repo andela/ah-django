@@ -1,8 +1,7 @@
 from .backends import JWTAuthentication as auth
 
 
-from rest_framework import generics, status, permissions
-from django.core.mail import send_mail
+from rest_framework import generics, status
 
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
 
@@ -19,12 +18,13 @@ from .serializers import (
     PasswordResetSerializer, SocialSerializer
 )
 
-from . import mailer
+from .reset_password import RecoverPassword
+from ..utils.mailer import Email
 from requests.exceptions import HTTPError
 
 from social_django.utils import load_strategy, load_backend
 from social_core.backends.oauth import BaseOAuth2, BaseOAuth1
-from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
+from social_core.exceptions import MissingBackend, AuthForbidden
 
 
 class RegistrationAPIView(APIView):
@@ -63,11 +63,11 @@ class RegistrationAPIView(APIView):
             "Please use the link {}".format(full_link) +\
             " to sign in to your new account"
 
-        from_email = 'no-reply@authorshaven.com'
         to_email = [serializer.data.get('email')]
 
-        send_mail(subject, contact_message, from_email, to_email,
-                  fail_silently=True)
+        email = Email(subject=subject, message=contact_message,
+                      to_email=to_email)
+        email.send()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -142,20 +142,19 @@ class ResetPassword(generics.GenericAPIView):
             }
             return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
-        res = self.send_reset_password_email(user[0])
+        self.send_reset_password_email(user[0])
         msg = "Check email to reset password"
         data = self.get_user_data(user[0])
         token = data['token']
         uid = data['uid']
 
-        if res.status_code == 202:
-            response = {
-                "status": 200,
-                "token": token,
-                "uid": uid,
-                "message": msg
-            }
-            return Response(response, status=status.HTTP_200_OK)
+        response = {
+            "status": 200,
+            "token": token,
+            "uid": uid,
+            "message": msg
+        }
+        return Response(response, status=status.HTTP_200_OK)
 
     def get_user(self, email):
         if self._users is None:
@@ -172,8 +171,8 @@ class ResetPassword(generics.GenericAPIView):
         recepient = get_user_email(user)
         data = self.get_user_data(recepient)
 
-        return mailer.RecoverPassword(self.request,
-                                      context, recepient, data).send_email()
+        return RecoverPassword(self.request,
+                               context, recepient, data).send_email()
 
     def get_user_data(self, email):
         user = User.objects.get(email=email).username
@@ -253,7 +252,8 @@ class SocialAuthView(generics.GenericAPIView):
         strategy = load_strategy(request)  # creates the app instance
 
         try:
-            # load backend with strategy and provider from settings(AUTHENTICATION_BACKENDS)
+            # load backend with strategy and provider
+            # from settings(AUTHENTICATION_BACKENDS)
             backend = load_backend(
                 strategy=strategy, name=provider, redirect_uri=None)
 
@@ -264,12 +264,14 @@ class SocialAuthView(generics.GenericAPIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            # check type of oauth provider e.g facebook is BaseOAuth2 twitter is BaseOAuth1
+            # check type of oauth provider e.g
+            # facebook is BaseOAuth2 twitter is BaseOAuth1
             if isinstance(backend, BaseOAuth1):
                 # oath1 passes access token and secret
                 access_token = {
                     "oauth_token": serializer.data.get('access_token'),
-                    "oauth_token_secret": serializer.data.get('access_token_secret'),
+                    "oauth_token_secret": serializer.data.get(
+                        'access_token_secret'),
                 }
 
             elif isinstance(backend, BaseOAuth2):

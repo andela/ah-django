@@ -1,8 +1,12 @@
+""" This module defines models for articles """
+
+from django.db.models.signals import post_save
 from authors.apps.reactions.models import UserReaction
 from authors.apps.authentication.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
+from authors.apps.notifications.signals import article_created
 
 
 class Article(models.Model):
@@ -28,3 +32,6 @@ class ArticleRating(models.Model):
     rater = models.ForeignKey(User, on_delete=models.CASCADE)
     article = models.ForeignKey(Article, on_delete=models.CASCADE)
     rating = models.IntegerField()
+
+
+post_save.connect(article_created, sender=Article)

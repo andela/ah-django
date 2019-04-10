@@ -8,8 +8,9 @@ https://docs.djangoproject.com/en/1.11/ref/settings/
 """
 
 import os
-import django_heroku
 import datetime
+import django_heroku
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -52,6 +53,8 @@ INSTALLED_APPS = [
     'django_inlinecss',
     'social_django',
     'cloudinary',
+    'notifications',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -209,8 +212,8 @@ JWT_AUTH = {
         'JWT_AUTH_COOKIE': None,
 }
 
-# EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = os.environ.get('EMAIL_PORT') or 587
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')

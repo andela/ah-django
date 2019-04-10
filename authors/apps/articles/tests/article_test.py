@@ -172,3 +172,10 @@ class ArticleDetails(BaseTestCase):
                                     rating, HTTP_AUTHORIZATION=auth,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def search_article_title_success(self):
+        """ test for a successful search for article by title"""
+        response = self.test_client.get(
+            "/api/articles/search?title={}".format(self.title),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)

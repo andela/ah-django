@@ -146,6 +146,7 @@ class BaseTestCase(APITestCase):
             "email": "cow@mammals.milk",
         }
         self.mockuser = User.objects.create_user('username', 'username')
+        self.title = 'djangorest'
 
     def register_new_user(self, data={}):
         """

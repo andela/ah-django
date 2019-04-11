@@ -163,6 +163,10 @@ REST_FRAMEWORK = {
         # 'rest_framework_jwt.authentication.JSONWebTokenAuthentication',
         'authors.apps.authentication.backends.JWTAuthentication',
     ),
+
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination'
+                                '.PageNumberPagination',
+    'PAGE_SIZE': 5
 }
 
 # EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'

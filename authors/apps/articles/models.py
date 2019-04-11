@@ -24,6 +24,9 @@ class Article(models.Model):
     user_reaction = GenericRelation(UserReaction, related_query_name='article')
     reading_time = models.CharField(blank=True, null=True, max_length=100)
 
+    class Meta:
+        ordering = ["-id"]
+
     def __str__(self):
         return self.title
 

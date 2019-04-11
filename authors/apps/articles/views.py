@@ -5,12 +5,16 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_social_share.templatetags import social_share
 from django.urls import reverse
+
+from django.template.defaultfilters import slugify
+from django.db.models import Avg
+
+
 from .models import Article, ArticleRating
 from .exceptions import NoResultsMatch
 from .serializers import ArticleSerializer, RateArticleSerializer
 from ..core.permissions import IsOwnerOrReadOnly
-from django.template.defaultfilters import slugify
-from django.db.models import Avg
+from authors.apps.stats.models import ReadStats
 
 
 class NewArticle(APIView):
@@ -27,7 +31,7 @@ class NewArticle(APIView):
     def calculate_read_time(article_body):
         words_per_minute = 200
         word_count = len(article_body.split(" "))
-        reading_time = round(word_count/words_per_minute)
+        reading_time = round(word_count / words_per_minute)
         if reading_time <= 1:
             reading_time = "less than 1 minute"
             return reading_time
@@ -73,6 +77,19 @@ class ArticleDetails(generics.RetrieveAPIView, mixins.UpdateModelMixin,
     serializer_class = ArticleSerializer
     lookup_field = 'slug'
 
+    def get(self, request, *args, **kwargs):
+        """
+            Retrieves a single article item
+        """
+        query = self.queryset.values('author')
+        owner = list(query)[0].get('author')
+        self.update_author_views(author=owner)
+
+        kwargs.update({'views': True})
+        self.update_article_stats(**kwargs)
+
+        return self.retrieve(request, *args, **kwargs)
+
     def put(self, request, *args, **kwargs):
         data = request.data
         # check if body is being updated so we can update reading time
@@ -90,6 +107,39 @@ class ArticleDetails(generics.RetrieveAPIView, mixins.UpdateModelMixin,
         self.perform_destroy(instance)
         return Response({"detail": "article deleted"},
                         status=status.HTTP_200_OK)
+
+    @classmethod
+    def update_article_stats(cls, **kwags):
+        """
+            Increaments the view and read-records count of
+            an article
+        """
+        slug = kwags.get('slug')
+        article = ArticleInst.fetch(slug)
+        field = 'views'
+        if 'views' in kwags:
+            article.views += 1
+        elif 'reads' in kwags:
+            article.reads += 1
+            field = 'reads'
+            cls.update_author_views(article=article, action='reads')
+        article.save(update_fields=[field])
+
+    @classmethod
+    def update_author_views(cls, article=None, author=None, action='views'):
+        """
+            Increaments the view count of the author
+            of an article
+        """
+        query_field = article.author if article else author
+
+        owner = ReadStats.objects.get(user=query_field)
+
+        if action == 'views':
+            owner.views += 1
+        else:
+            owner.reads += 1
+        owner.save(update_fields=[action])
 
 
 class ArticleInst:
@@ -222,3 +272,24 @@ class SearchArticlesList(generics.ListAPIView):
             raise NoResultsMatch
 
         return queryset
+
+
+class ReadArticleView(generics.CreateAPIView):
+    """
+        Sends requests to update article `read` stats
+    """
+
+    def post(self, request, slug):
+        """
+            Adds a READ to an article
+        """
+        fields = {'slug': slug,
+                  'reads': True
+                  }
+        ArticleDetails.update_article_stats(**fields)
+        res = {'message': 'Article read saved'}
+        res['data'] = {'slug': slug}
+
+        return Response(
+            data=res,
+            status=status.HTTP_201_CREATED)

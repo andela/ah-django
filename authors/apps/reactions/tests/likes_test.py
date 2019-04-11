@@ -115,3 +115,23 @@ class TestArticleLike(BaseTestCase):
         res = self.post_article_reaction(path)
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_like_comment(self):
+        """
+            Verify: A liked  comment should have its reaction (like)
+            increament by one
+        """
+        path = self.get_article_slug(created=True)
+        with self.settings(
+                EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend'):
+            self.post_article_comment(path)
+        comment_path = self.get_single_comment_path()
+
+        response = self.client.post(f'{path}/{comment_path}/like')
+
+        self.assertEqual(
+            response.json().get('reaction').get('data')
+            .get('likes'), 1)
+        self.assertTrue(response.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(response.json().get('reaction')
+                        .get('message') == 'Reaction Created')

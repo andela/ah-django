@@ -26,6 +26,8 @@ class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SerializerMethodField()
     article = serializers.SerializerMethodField()
     replies = serializers.SerializerMethodField()
+    likes = serializers.SerializerMethodField()
+    dislikes = serializers.SerializerMethodField()
 
     class Meta:
         model = Comment
@@ -40,6 +42,12 @@ class CommentSerializer(serializers.ModelSerializer):
 
     def get_replies(self, inst):
         return inst.replies
+
+    def get_likes(self, inst):
+        return inst.user_reaction.likes.count()
+
+    def get_dislikes(self, inst):
+        return inst.user_reaction.dislikes.count()
 
 
 class CommentReplySerializer(serializers.ModelSerializer):

@@ -22,6 +22,7 @@ class Article(models.Model):
     updatedAt = models.DateTimeField(blank=True, null=True, auto_now=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     user_reaction = GenericRelation(UserReaction, related_query_name='article')
+    reading_time = models.CharField(blank=True, null=True, max_length=100)
 
     def __str__(self):
         return self.title

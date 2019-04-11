@@ -3,6 +3,7 @@ from ...authentication.tests.base_test import BaseTestCase
 from rest_framework_jwt import utils
 from ..serializers import ArticleSerializer
 from ..models import Article
+from ..views import NewArticle
 
 
 class TestNewArticle(BaseTestCase):
@@ -172,6 +173,86 @@ class ArticleDetails(BaseTestCase):
                                     rating, HTTP_AUTHORIZATION=auth,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_calculate_reading_time(self):
+        """
+        test time calculation
+        """
+        short_post = NewArticle.calculate_read_time("very short post")
+        self.assertEqual(short_post, "less than 1 minute")
+        longer_post_body = 'The incident that ruined my day happened early ' \
+                           'in the morning: I was in my car and ' \
+                           'inadvertently cut off another driver, who then ' \
+                           'zoomed up next to me and yelled, “Idiot!” ' \
+                           'outside my window before hastily driving off. ' \
+                           'Frustrated, I yelled something nasty back, ' \
+                           'even though I knew he couldn’t hear me — which ' \
+                           'frustrated me, too.Even minor annoyances like ' \
+                           'these can create a domino effect. The first ' \
+                           'annoyance magnifies each one that follows, ' \
+                           'all of them building on each other until you’ve ' \
+                           'worked yourself into a full-on bad mood.But ' \
+                           'there are ways you can successfully lessen your ' \
+                           'negative reactions before they escalate. When ' \
+                           'you feel the day spiraling away from you, ' \
+                           'simply noticing that you’re in a funk is an ' \
+                           'important first step toward getting out of it. ' \
+                           'Here are a few ways to pull yourself out of a ' \
+                           'bad mood before it gets too big to ' \
+                           'control.Triggers can be physical, too. For ' \
+                           'instance, I have a bad habit of drinking too ' \
+                           'much coffee and little else, turning me into a ' \
+                           'jittery, dehydrated mess. According to Hanley, ' \
+                           'a small detail like this can be a contributing ' \
+                           'factor to a bad mood—and one that might be ' \
+                           'easily overlooked.the correct way.” When I ' \
+                           'yelled back at that other driver, ' \
+                           'I was reflexively reacting. But angrily ' \
+                           'lingering on the interactn for the rest of the ' \
+                           'day was a choice — and one that only aggravated ' \
+                           'my mood.ep back from your immediate emotional ' \
+                           'reactions and reflect on them, says Leslie ' \
+                           'Becker-Phelps, a licensed psychologist and ' \
+                           'author of Insecure in Love. By thinking ' \
+                           'critically about the situation and your role in ' \
+                           'it, you can create some distance from your ' \
+                           'emotions, which in turn allows you to gain more ' \
+                           'control over how youre feeling. small one — you ' \
+                           'forget your password for the umpteenth time, ' \
+                           'or a meeting gets rescheduled yet again — it’s ' \
+                           'easy to let yourself fall into a steady stream ' \
+                           'of complaints. to look for threats,” Hanley ' \
+                           'says. Evolutionarily, this helped keep us ' \
+                           'alive — but in modn-day life, threats can look ' \
+                           'a lot more like minor annoyances, creating a ' \
+                           'negativity bias that keeps us focused on what’s ' \
+                           'going wrong. “To bust out of this neural rut,' \
+                           '” she says, “train yourself to acknowledge when ' \
+                           'things go right.n each of those things. “It’s a ' \
+                           'way for you to say, ‘I had a positive impact,' \
+                           '’” Colan says. “And I don’t care how much of a ' \
+                           'bummer your day is, there’s always a couple of ' \
+                           'things that went well.” Themore attuned you are ' \
+                           'to this fact, the better equipped you’ll be to ' \
+                           'consciously respond with positivity the next ' \
+                           'time things go wrong. let something derail your ' \
+                           'mood and your day. That’s a skill that comes ' \
+                           'with time and practice.” Hanley says. “Even ' \
+                           'saying to yourself, ‘Wow, I’m in a bad mood,' \
+                           '’ can be just the opening to ask yourself, ' \
+                           '‘What do I most ned right now?’”it in the first ' \
+                           'place. Make an efort to regularly check in with ' \
+                           'yourself througout the day for what you need in ' \
+                           'a given moment — whether it’s a glass of water ' \
+                           'or a quick walk around the block. Colan says ' \
+                           'there’s a level of mindfulness to it: “One of ' \
+                           'the key things to get through any point of ' \
+                           'adversity—even if it’s just a bad mood or rough ' \
+                           'day—you have to plan for the future but live in ' \
+                           'the present.mporary may help speed the process ' \
+                           'along. '
+        longer_post = NewArticle.calculate_read_time(longer_post_body)
+        self.assertNotEqual(longer_post, "less than 1 minute")
 
     def search_article_title_success(self):
         """ test for a successful search for article by title"""

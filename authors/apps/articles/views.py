@@ -22,6 +22,16 @@ class NewArticle(APIView):
     permission_classes = (IsAuthenticated,)
     serializer_class = ArticleSerializer
 
+    @staticmethod
+    def calculate_read_time(article_body):
+        words_per_minute = 200
+        word_count = len(article_body.split(" "))
+        reading_time = round(word_count/words_per_minute)
+        if reading_time <= 1:
+            reading_time = "less than 1 minute"
+            return reading_time
+        return str(reading_time) + " minutes"
+
     def post(self, request):
         """
             Creates a new article with the details provided
@@ -29,6 +39,7 @@ class NewArticle(APIView):
         article = request.data.get('article', {})
         article['slug'] = \
             slugify(article['title']) + "_" + request.user.username
+        article['reading_time'] = self.calculate_read_time(article['body'])
         serializer = self.serializer_class(data=article)
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)
@@ -62,6 +73,15 @@ class ArticleDetails(generics.RetrieveAPIView, mixins.UpdateModelMixin,
     lookup_field = 'slug'
 
     def put(self, request, *args, **kwargs):
+        data = request.data
+        # check if body is being updated so we can update reading time
+        if 'body' in data:
+            update_reading_time = NewArticle.calculate_read_time(data['body'])
+            data['reading_time'] = update_reading_time
+        serializer = ArticleSerializer(request.user, data=data,
+                                       partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return self.partial_update(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):

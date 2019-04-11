@@ -6,6 +6,7 @@ from django.db.models import Avg
 class ArticlesSerializer(serializers.ModelSerializer):
     rating_count = serializers.SerializerMethodField(read_only=True, default=0)
     avg_rating = serializers.SerializerMethodField(read_only=True, default=0)
+    author = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = Articles
@@ -39,6 +40,14 @@ class ArticlesSerializer(serializers.ModelSerializer):
         if qs['rating__avg'] is None:
             return 0
         return qs['rating__avg']
+
+    def get_author(self, obj):
+
+        return {
+            "username": obj.author.username,
+            "bio": obj.author.bio,
+            "image": obj.author.image
+        }
 
 
 class RatingSerializer(serializers.ModelSerializer):

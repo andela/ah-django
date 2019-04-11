@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django_extensions',
     'rest_framework',
     'djoser',
+    'django_filters',
 
     'authors.apps.authentication',
     'authors.apps.core',

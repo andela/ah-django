@@ -67,7 +67,7 @@ class TestCommentsOperations(APITestCase):
             format='json', follow=True
         )
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
 
         comments = self.client.post(
             self.post_get_url.format(article_slug=article_slug),
@@ -81,7 +81,7 @@ class TestCommentsOperations(APITestCase):
     def test_put_comment(self):
         article = self.create_article(self.article)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
 
         comments = self.client.post(
             self.post_get_url.format(article_slug=article_slug),
@@ -104,7 +104,7 @@ class TestCommentsOperations(APITestCase):
         article = self.create_article(
             self.article)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
 
         comments = self.client.post(
             self.post_get_url.format(article_slug=article_slug),
@@ -125,7 +125,7 @@ class TestCommentsOperations(APITestCase):
         article = self.create_article(
             self.article)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
 
         self.client.post(
             self.post_get_url.format(article_slug=article_slug),

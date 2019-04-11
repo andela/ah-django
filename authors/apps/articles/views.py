@@ -10,10 +10,11 @@ from .models import Articles, Likes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 from django.contrib.contenttypes.models import ContentType
-from .serializers import ArticlesSerializer
 from django.shortcuts import get_object_or_404
 from .models import Rating, Comments
 from .serializers import RatingSerializer, CommentsSerializer
+from django_filters import rest_framework as filters
+from .filters import ArticleFilter
 
 from datetime import datetime
 
@@ -23,12 +24,24 @@ from rest_framework.renderers import JSONRenderer
 class ArticlesPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
 
+    def get_paginated_response(self, data):
+        return Response({
+            'links': {
+                'next': self.get_next_link(),
+                'prev': self.get_previous_link()
+            },
+            'count': self.page.paginator.count,
+            'articles': data
+        })
+
 
 class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
     queryset = Articles.objects.get_queryset().order_by('id')
     ordering = ['-id']
     serializer_class = ArticlesSerializer
     pagination_class = ArticlesPagination
+    filter_backends = (filters.DjangoFilterBackend,)
+    filterset_class = ArticleFilter
 
     def post(self, request):
         if request.user.is_authenticated:
@@ -38,9 +51,8 @@ class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(author=self.request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({'article': serializer.data},
+                            status=status.HTTP_201_CREATED)
         else:
             return Response(
                 {
@@ -210,6 +222,8 @@ class LikeView(APIView):
                  'dislikes': dislikesCount,
                  'total': likesCount+dislikesCount}
         return count
+
+
 class CreateCommentView(CreateAPIView, ListAPIView):
     '''Endpoint for creating a comments'''
     queryset = Comments.objects.all()

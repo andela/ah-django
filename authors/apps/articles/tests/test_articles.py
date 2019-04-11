@@ -8,6 +8,7 @@ class CURDArticlesTestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
         self.postlist_article_url = '/api/articles/'
+        self.filter_article_url = '/api/articles?title=article&author_id=1'
         self.get_article_url = '/api/articles/{article_slug}/'
         self.get_tag_url = '/api/tags'
         self.user_signup = {
@@ -129,7 +130,7 @@ class CURDArticlesTestCase(APITestCase):
     def test_get_article(self):
         article = self.create_article(self.article)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
         get_articles = self.client.get(
             self.get_article_url.format(article_slug=article_slug)
         )
@@ -141,7 +142,7 @@ class CURDArticlesTestCase(APITestCase):
         article = self.create_article(
             self.article)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
         edit_article = self.client.put(
             self.get_article_url.format(article_slug=article_slug),
             data=self.edit_article, formart='json'
@@ -154,7 +155,7 @@ class CURDArticlesTestCase(APITestCase):
         article = self.create_article(
             self.article)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
         delete_article = self.client.delete(
             self.get_article_url.format(article_slug=article_slug)
         )
@@ -182,7 +183,7 @@ class CURDArticlesTestCase(APITestCase):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + credentials2)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
         delete_article = self.client.delete(
             self.get_article_url.format(article_slug=article_slug)
         )
@@ -202,7 +203,7 @@ class CURDArticlesTestCase(APITestCase):
         self.client.credentials(
             HTTP_AUTHORIZATION='Bearer ' + credentials2)
         data = json.loads(article.content)
-        article_slug = data['slug']
+        article_slug = data['article']['slug']
         edit_article = self.client.put(
             self.get_article_url.format(article_slug=article_slug),
             data=self.edit_article, formart='json'
@@ -221,7 +222,7 @@ class CURDArticlesTestCase(APITestCase):
     def test_create_rating(self):
         article = self.create_article(self.article)
         data = json.loads(article.content)
-        article_id = data['id']
+        article_id = data['article']['id']
         self.rate_article_url = "/api/articles/{article_id}/rating/"
         payload = {"rating":
                    {
@@ -252,7 +253,7 @@ class CURDArticlesTestCase(APITestCase):
     def test_create_rating_field_missing(self):
         article = self.create_article(self.article)
         data = json.loads(article.content)
-        article_id = data['id']
+        article_id = data['article']['id']
         self.rate_article_url = "/api/articles/{article_id}/rating/"
         payload = {"rating":
                    {
@@ -268,7 +269,7 @@ class CURDArticlesTestCase(APITestCase):
     def test_create_rating_non_integer_rating(self):
         article = self.create_article(self.article)
         data = json.loads(article.content)
-        article_id = data['id']
+        article_id = data['article']['id']
         self.rate_article_url = "/api/articles/{article_id}/rating/"
         payload = {"rating":
                    {
@@ -293,7 +294,7 @@ class CURDArticlesTestCase(APITestCase):
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
-        self.assertEqual(len(data["results"]), 4)
+        self.assertEqual(len(data["articles"]), 4)
 
     def test_default_pagination(self):
         """Test default pagination of articles """
@@ -306,4 +307,14 @@ class CURDArticlesTestCase(APITestCase):
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
-        self.assertEqual(len(data["results"]), 10)
+        self.assertEqual(len(data["articles"]), 10)
+
+    def test_filtered_article(self):
+        """Test filtering articles"""
+
+        self.create_article(self.article)
+        list_articles = self.client.get(
+            self.filter_article_url, follow=True
+        )
+        self.assertEqual(list_articles.status_code,
+                         status.HTTP_200_OK)

@@ -20,7 +20,7 @@ class ArticleLikesTestCase(BaseTestCase):
         """
 
         res = self.create_article(self.article)
-        article = res.data
+        article = res.data['article']
         article_id = article['id']
         slug = article['slug']
         like_res = self.like_action(slug)
@@ -39,7 +39,7 @@ class ArticleLikesTestCase(BaseTestCase):
         """Tests for Article dislike
         """
         res = self.create_article(self.article)
-        article = res.data
+        article = res.data['article']
         article_id = article['id']
         slug = article['slug']
         like_res = self.like_action(slug, 'dislike')
@@ -51,7 +51,7 @@ class ArticleLikesTestCase(BaseTestCase):
         """Tests for Article Remove like
         """
         res = self.create_article(self.article)
-        article = res.data
+        article = res.data['article']
         article_id = article['id']
         slug = article['slug']
         like_res = self.like_action(slug, 'like')
@@ -67,7 +67,7 @@ class ArticleLikesTestCase(BaseTestCase):
         """Tests for Artile like then change to dislike
         """
         res = self.create_article(self.article)
-        article = res.data
+        article = res.data['article']
         article_id = article['id']
         slug = article['slug']
         like_res = self.like_action(slug, 'like')
@@ -84,7 +84,7 @@ class ArticleLikesTestCase(BaseTestCase):
         """Test get likes 
         """
         res = self.create_article(self.article)
-        article = res.data
+        article = res.data['article']
         article_id = article['id']
         slug = article['slug']
         res2 = self.client.get(
@@ -100,7 +100,7 @@ class ArticleLikesTestCase(BaseTestCase):
         """Test get likes 
         """
         res = self.create_article(self.article)
-        article = res.data
+        article = res.data['article']
         article_id = article['id']
         slug = article['slug']
         url = self.likeUrl.format(slug)

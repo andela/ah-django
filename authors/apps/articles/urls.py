@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path
 from .views import (
     CreateArticleView, SingleArticleView, RatingView, LikeView,
-    CreateCommentView, UpdateDeleteCommentView
+    CreateCommentView, UpdateDeleteCommentView, TagView
 )
 
 urlpatterns = [
@@ -25,5 +25,6 @@ urlpatterns = [
 
     path('articles/<article_slug>/comments/<int:id>',
          UpdateDeleteCommentView.as_view(),
-         name="update-delete-comment")
+         name="update-delete-comment"),
+    path('tags', TagView.as_view(), name="tags")
 ]

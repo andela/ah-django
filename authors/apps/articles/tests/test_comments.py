@@ -22,7 +22,9 @@ class TestCommentsOperations(APITestCase):
                 "title": "This is the article title",
                 "description": "This is the article description",
                 "body": "This is the article body",
-                "image_url": "https://imageurl.com"
+                "image_url": "https://imageurl.com",
+                "tags": ["test", "trial"]
+
             }
 
         }

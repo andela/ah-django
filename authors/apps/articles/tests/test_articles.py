@@ -9,6 +9,7 @@ class CURDArticlesTestCase(APITestCase):
         self.client = APIClient()
         self.postlist_article_url = '/api/articles/'
         self.get_article_url = '/api/articles/{article_slug}/'
+        self.get_tag_url = '/api/tags'
         self.user_signup = {
             "user": {
                 "email": "testuser@gmail.com",
@@ -30,14 +31,38 @@ class CURDArticlesTestCase(APITestCase):
                 "title": "This is the article title",
                 "description": "This is the article description",
                 "body": "This is the article body",
+                "image_url": "https://imageurl.com",
+                "tags": ["test", "trial"]
+            }
+
+        }
+
+        self.article_no_tags = {
+            "article": {
+                "title": "This is the article title",
+                "description": "This is the article description",
+                "body": "This is the article body",
                 "image_url": "https://imageurl.com"
+            }
+
+        }
+
+        self.article_empty_taglist = {
+            "article": {
+                "title": "This is the article title",
+                "description": "This is the article description",
+                "body": "This is the article body",
+                "image_url": "https://imageurl.com",
+                "tags": []
             }
 
         }
 
         self.edit_article = {
             "title": "This article title is edited",
-            "body": "This article body is edited"
+            "body": "This article body is edited",
+            "tags": ["test", "trial"]
+
         }
 
         self.signup = self.client.post(
@@ -72,6 +97,26 @@ class CURDArticlesTestCase(APITestCase):
 
         self.assertEqual(article.status_code,
                          status.HTTP_201_CREATED)
+
+    def test_create_article_no_tags(self):
+        article = self.create_article(self.article_no_tags)
+
+        self.assertEqual(article.status_code,
+                         status.HTTP_201_CREATED)
+
+    def test_create_article_empty_taglist(self):
+        article = self.create_article(self.article_empty_taglist)
+
+        self.assertEqual(article.status_code,
+                         status.HTTP_201_CREATED)
+
+    def test_get_taglist(self):
+        self.create_article(self.article)
+        get_tag = self.client.get(
+            self.get_tag_url
+        )
+        self.assertEqual(get_tag.status_code,
+                         status.HTTP_200_OK)
 
     def test_list_articles(self):
         self.create_article(self.article)

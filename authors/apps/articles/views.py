@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status, pagination
 from rest_framework.pagination import PageNumberPagination
 from .models import Articles
-from .serializers import ArticlesSerializer, LikesSerializer
+from .serializers import ArticlesSerializer, LikesSerializer, TagsSerializer
 from ..authentication.models import User
 from .models import Articles, Likes
 from rest_framework.permissions import AllowAny, IsAuthenticated
@@ -347,3 +347,19 @@ class UpdateDeleteCommentView(RetrieveUpdateDestroyAPIView):
         else:
             return Response({"error": "Article does not exist"},
                             status=status.HTTP_404_NOT_FOUND)
+
+
+class TagView(ListAPIView):
+    queryset = Articles.objects.values('tags')
+    ordering = ['-id']
+    serializer_class = TagsSerializer
+
+    def get(self, request):
+        queryset = self.get_queryset()
+        serializer = self.serializer_class(
+            queryset, many=True)
+        result = []
+        for taglist in serializer.data:
+            for tag in taglist["tags"]:
+                result.append(tag)
+        return Response(data={"tags": set(result)})

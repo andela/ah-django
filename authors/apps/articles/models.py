@@ -19,6 +19,8 @@ class Articles(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=200, unique=True)
     tags = ArrayField(models.CharField(max_length=20), default=list)
+    # favorited = models.BooleanField(default=False)
+    # favoritesCount = models.IntegerField(default=0)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -92,3 +94,12 @@ class Comments(models.Model):
     updated_at = models.DateTimeField()
     body = models.TextField()
     author = models.CharField(max_length=200)
+
+
+class Favorites(models.Model):
+    """ Favorites model for the app"""
+
+    article = models.ForeignKey(Articles, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

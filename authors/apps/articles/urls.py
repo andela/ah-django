@@ -2,7 +2,7 @@ from django.conf.urls import url
 from django.urls import path
 from .views import (
     CreateArticleView, SingleArticleView, RatingView, LikeView,
-    CreateCommentView, UpdateDeleteCommentView, TagView
+    CreateCommentView, UpdateDeleteCommentView, TagView, FavouritesView
 )
 
 urlpatterns = [
@@ -12,8 +12,10 @@ urlpatterns = [
     url(r'^articles/(?P<slug>[-\w]+)/?$',
         SingleArticleView.as_view(),
         name="single-article"),
+
     path('articles/<int:article_id>/rating/', RatingView.as_view(),
          name="rate-article"),
+
     url(r'^articles/(?P<slug>[-\w]+)/likes/?$',
         LikeView.as_view(), name="like_article"),
     url(r'^articles/(?P<slug>[-\w]+)/likes/(?P<type>[-\w]+)/?$',
@@ -26,5 +28,12 @@ urlpatterns = [
     path('articles/<article_slug>/comments/<int:id>',
          UpdateDeleteCommentView.as_view(),
          name="update-delete-comment"),
-    path('tags', TagView.as_view(), name="tags")
+    path('tags', TagView.as_view(), name="tags"),
+
+    path('articles/<article_slug>/favorite',
+         FavouritesView.as_view(), name="favorite-article"),
+
+    path('favorite/articles',
+         FavouritesView.as_view(), name="favorites")
+
 ]

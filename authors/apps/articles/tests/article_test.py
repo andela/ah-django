@@ -68,7 +68,9 @@ class ArticleDetails(BaseTestCase):
         response = self.client.get(self.articles_feed)
         articles = Article.objects.all()
         serializer = ArticleSerializer(articles, many=True)
-        self.assertEqual(response.data, serializer.data)
+        print("response.data==>", response.data['results'])
+        print("serializer.data", serializer.data)
+        self.assertEqual(response.data['results'], serializer.data[0:5])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_get_one_article(self):
@@ -253,6 +255,14 @@ class ArticleDetails(BaseTestCase):
                            'along. '
         longer_post = NewArticle.calculate_read_time(longer_post_body)
         self.assertNotEqual(longer_post, "less than 1 minute")
+
+    def test_pagination(self):
+        response = self.client.get('/api/articles/feed/?page=1')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_non_existent_page(self):
+        response = self.client.get('/api/articles/feed/?page=10000')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def search_article_title_success(self):
         """ test for a successful search for article by title"""

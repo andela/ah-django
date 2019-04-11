@@ -4,8 +4,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions
 
+
 from authors.apps.articles.models import Article
-from .serializers import CommentSerializer, CommentReplySerializer
+from .serializers import (
+    CommentSerializer, CommentReplySerializer, CommentHistorySerializer)
 from .renderers import CommentRenderer, CommentReplyRenderer
 from .models import Comment, CommentReply
 from ..core.permissions import IsOwnerOrReadOnly
@@ -226,6 +228,7 @@ class ReplyList(generics.ListCreateAPIView):
             key=id)
 
         comments = posted_comment.replies
+        comments = self.serializer_class(comments, many=True).data
 
         response = {'comment': posted_comment.body}
         response['replies'] = comments
@@ -319,3 +322,24 @@ class ReplyAPIView(generics.RetrieveUpdateDestroyAPIView):
             )
 
         return reply
+
+
+class CommentHistoryAPIView(generics.RetrieveAPIView):
+    """
+        Provides methods to track the
+        editing history of present comments
+    """
+    renderer_classes = (CommentRenderer,)
+    permission_classes = (IsAuthenticatedOrReadOnly,)
+    serializer_class = CommentHistorySerializer
+
+    def get(self, request, slug, key):
+        """
+            Retrieves all history records saved
+            for a comment
+        """
+        article = ArticleInst.fetch(slug)
+        comment = CommentAPIView.check_comment(key, article)
+        serializer = self.serializer_class(comment)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)

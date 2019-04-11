@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_inlinecss',
     'social_django',
+    'simple_history',
     'cloudinary',
     'notifications',
     'django_filters',
@@ -83,6 +84,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'social_django.context_processors.backends',
                 'social_django.context_processors.login_redirect',
+                'simple_history.middleware.HistoryRequestMiddleware',
             ],
         },
     },
@@ -169,8 +171,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 5
 }
 
-# EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = 'sendgrid_backend.SendgridBackend'
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.environ.get('EMAIL_HOST')
 EMAIL_PORT = os.environ.get('EMAIL_PORT') or 587
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')

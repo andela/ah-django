@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'social_django',
     'simple_history',
     'cloudinary',
+    'django_social_share',
     'notifications',
     'django_filters',
 ]

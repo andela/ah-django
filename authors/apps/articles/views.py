@@ -11,16 +11,12 @@ from django.urls import reverse
 
 from .models import ArticleRating, Article, Report
 from .serializers import ArticleSerializer, ReportSerializer
-from .serializers import RateArticleSerializer
 from ..core.permissions import IsOwnerOrReadOnly
 from django.template.defaultfilters import slugify
 from django.db.models import Avg
 
-
-from .models import Article, ArticleRating, Report
 from .exceptions import NoResultsMatch
-from .serializers import ArticleSerializer, RateArticleSerializer
-from .serializers import ReportSerializer
+from .serializers import RateArticleSerializer
 from ..core.permissions import IsOwnerOrReadOnly
 from authors.apps.stats.models import ReadStats
 

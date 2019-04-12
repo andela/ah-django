@@ -1,4 +1,5 @@
 from ...authentication.tests.base_test import BaseTestCase
+from django.urls import reverse
 from rest_framework_jwt import utils
 from ..models import Article, Report
 from ..serializers import ArticleSerializer, ReportSerializer
@@ -313,4 +314,24 @@ class ArticleDetails(BaseTestCase):
         reports = Report.objects.all()
         serializer = ReportSerializer(reports, many=True)
         self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_admin_get_single_report(self):
+        """
+        test admin see all reported articles
+        """
+        message = {
+            "message": "I hate this article"
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        res = self.client.post(self.report_article,
+                               message,
+                               HTTP_AUTHORIZATION=auth,
+                               format='json')
+        self.login_superuser()
+        url = self.report_actions
+        response = self.client.get(url)
+        self.assertTrue(response.data['viewed'], True)
         self.assertEqual(response.status_code, status.HTTP_200_OK)

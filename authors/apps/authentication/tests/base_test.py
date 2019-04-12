@@ -173,6 +173,13 @@ class BaseTestCase(APITestCase):
         """adds authentication credentials in the request header"""
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + response)
 
+    def report_article(self, report_data):
+        self.login_user(self.user)
+        id = self.article
+        url = reverse('report_article', kwargs={'pk': id})
+        response = self.client.post(url, data=report_data, format='json')
+        return response
+
     def create_superuser(self, email, username, password):
         User.objects.create_superuser(
             email=email,

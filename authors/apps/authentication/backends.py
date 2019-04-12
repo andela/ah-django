@@ -59,7 +59,10 @@ class JWTokens(object):
 
 
 class JWTAuthentication(BaseAuthentication):
-    """docstring for JWTAthentication"""
+    """
+        This class handles authentication
+        requests
+    """
 
     def authenticate(self, request):
         """
@@ -86,3 +89,6 @@ class JWTAuthentication(BaseAuthentication):
             user = User.objects.filter(
                 username=auth_payload.get('username')).first()
         return user, token
+
+
+authenticate = JWTAuthentication()

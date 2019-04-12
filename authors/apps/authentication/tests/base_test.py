@@ -30,9 +30,11 @@ class BaseTestCase(APITestCase):
         self.new_article_path = reverse('articles:new_article')
         self.articles_feed = reverse('articles:articles_feed')
         self.profile_url = reverse('profiles:list_profiles')
+
         self.username = 'testguy99'
         self.email = 'testguy99'
         self.testuser = User.objects.create_user(self.username, self.email)
+
         # Article model imported here as it has to wait for django.setup()
         from ...articles.models import Article
         self.article = Article.objects.create(slug='test-slug',

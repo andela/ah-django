@@ -75,6 +75,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     # The `is_staff` flag is expected by Django to determine who can and cannot
     # log into the Django admin site. For most users, this flag will always be
+    is_verified = models.BooleanField(default=False)
     # falsed.
     is_staff = models.BooleanField(default=False)
 

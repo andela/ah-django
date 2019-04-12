@@ -92,11 +92,11 @@ class Mail:
                 can be used to generate the domain
                   e.g mail_instance(request)
         """
-
+        base = 'api/users'
         if not domain:
             domain = self.current_site.domain
 
-        return f'http://{domain}/{path}/{token}/'
+        return f'http://{domain}/{base}/{path}/{token}/'
 
 
 mail_helper = Mail()

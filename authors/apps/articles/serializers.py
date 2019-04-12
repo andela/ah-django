@@ -1,6 +1,5 @@
 from rest_framework import serializers
 from . import models
-from .models import Report
 from ..comments.models import Comment
 from ..comments.serializers import CommentSerializer
 from django.db.models import Avg
@@ -65,14 +64,3 @@ class ArticleSerializer(serializers.ModelSerializer):
 
     def __repr__(self):
         return self.body
-
-
-class ReportSerializer(serializers.ModelSerializer):
-    """
-    Report article class.
-    """
-
-    class Meta:
-        model = Report
-        fields = ("id", "article_id", "viewed", "action", "violation",
-                  "message", "create_at")

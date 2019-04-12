@@ -1,34 +1,20 @@
 from rest_framework import generics, status, mixins, exceptions
-from .exceptions import NoResultsMatch
-from rest_framework.permissions import (IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly,
-                                        IsAdminUser,
-                                        AllowAny)
+from rest_framework.permissions import (
+    IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django_social_share.templatetags import social_share
 from django.urls import reverse
 
-from .models import ArticleRating, Article, Report
-from .serializers import ArticleSerializer, ReportSerializer
-from ..core.permissions import IsOwnerOrReadOnly
 from django.template.defaultfilters import slugify
 from django.db.models import Avg
 
+
+from .models import Article, ArticleRating
 from .exceptions import NoResultsMatch
-from .serializers import RateArticleSerializer
+from .serializers import ArticleSerializer, RateArticleSerializer
 from ..core.permissions import IsOwnerOrReadOnly
 from authors.apps.stats.models import ReadStats
-
-
-def check_if_report_exists(Report, pk):
-
-    try:
-        query = Report.objects.get(pk=pk)
-    except Report.DoesNotExist:
-        raise exceptions.NotFound(f'Report with ID {pk} nonexistent')
-    else:
-        return query
 
 
 class NewArticle(APIView):
@@ -307,79 +293,3 @@ class ReadArticleView(generics.CreateAPIView):
         return Response(
             data=res,
             status=status.HTTP_201_CREATED)
-
-
-class ReportArticleView(generics.GenericAPIView):
-    """
-    View for user to report article
-    """
-    permission_classes = (IsAuthenticated, )
-    serializer_class = ReportSerializer
-
-    def post(self, request, slug):
-        invalid_string = "Message is not a valid string"
-        try:
-            article = Article.objects.get(slug=slug)
-        except Article.DoesNotExist:
-            return Response({
-                'error': f'Aricles with slug {slug} nonexistent'
-            },
-                status=status.HTTP_404_NOT_FOUND)
-        new_text = str(request.data.get('message', '')).strip()
-        if not new_text:
-            return Response({
-                "details": invalid_string
-            },
-                status=status.HTTP_400_BAD_REQUEST)
-        report = Report(
-            article=article, reported_by=request.user, message=new_text)
-        report.save()
-        serializer = ReportSerializer(report)
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-class ReportList(generics.ListCreateAPIView):
-    """
-    Return all reports for admin.
-    """
-    permission_classes = (IsAdminUser, )
-    serializer_class = ReportSerializer
-
-    def list(self, request):
-        query = Report.objects.all()
-        serializer = ReportSerializer(query, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class ReportAPIViews(generics.GenericAPIView):
-    """
-    Functions used by admin to handle reports
-    """
-    permission_classes = (IsAdminUser, )
-    serializer_class = ReportSerializer
-
-    def get(self, request, pk):
-        query = check_if_report_exists(Report, pk)
-        serializer = ReportSerializer(query)
-        query.viewed = True
-        query.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    # update violation to true
-    def put(self, request, pk):
-        query = check_if_report_exists(Report, pk)
-        serializer = ReportSerializer(query)
-        query.violation = True
-        query.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-    # delete report
-    def delete(self, request, pk):
-        query = check_if_report_exists(Report, pk)
-        article = Article.objects.get(pk=query.article_id)
-        article.delete()
-        return Response({
-            "details": "Report has been deleted"
-        },
-            status=status.HTTP_200_OK)

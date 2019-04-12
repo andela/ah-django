@@ -1,9 +1,9 @@
+from ..models import Article, Report
+from ..serializers import ArticleSerializer, ReportSerializer
+from ..views import NewArticle
 from rest_framework import status
 from ...authentication.tests.base_test import BaseTestCase
 from rest_framework_jwt import utils
-from ..serializers import ArticleSerializer
-from ..models import Article
-from ..views import NewArticle
 
 
 class TestNewArticle(BaseTestCase):
@@ -101,7 +101,8 @@ class ArticleDetails(BaseTestCase):
         token = utils.jwt_encode_handler(payload)
         auth = 'Bearer {0}'.format(token)
         response = self.client.put(self.article_details,
-                                   update_article, HTTP_AUTHORIZATION=auth,
+                                   update_article,
+                                   HTTP_AUTHORIZATION=auth,
                                    format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -270,3 +271,46 @@ class ArticleDetails(BaseTestCase):
             "/api/articles/search?title={}".format(self.title),
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_report_article(self):
+        """
+        test report a single article
+        """
+        message = {
+            "message": "I hate this article"
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        res = self.client.post(self.report_article,
+                               message,
+                               HTTP_AUTHORIZATION=auth,
+                               format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_report_article_invalid_message(self):
+        """
+        test report a single article using invalid message
+        """
+        message = {
+            "message": ""
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        res = self.client.post(self.report_article,
+                               message,
+                               HTTP_AUTHORIZATION=auth,
+                               format='json')
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_admin_get_all_reported_articles(self):
+        """
+        test admin see all reported articles
+        """
+        self.login_superuser()
+        response = self.client.get(self.view_reports)
+        reports = Report.objects.all()
+        serializer = ReportSerializer(reports, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

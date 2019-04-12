@@ -325,10 +325,10 @@ class ReportArticleView(generics.GenericAPIView):
         try:
             article = Article.objects.get(slug=slug)
         except Article.DoesNotExist:
-            return Response ({
+            return Response({
                 'error': f'Aricles with slug {slug} nonexistent'
             },
-            status=status.HTTP_404_NOT_FOUND)
+                status=status.HTTP_404_NOT_FOUND)
         new_text = str(request.data.get('message', '')).strip()
         if not new_text:
             return Response({

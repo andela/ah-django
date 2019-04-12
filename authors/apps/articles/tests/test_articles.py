@@ -1,9 +1,9 @@
+from ...authentication.tests.base_test import BaseTestCase
+from rest_framework_jwt import utils
 from ..models import Article, Report
 from ..serializers import ArticleSerializer, ReportSerializer
 from ..views import NewArticle
 from rest_framework import status
-from ...authentication.tests.base_test import BaseTestCase
-from rest_framework_jwt import utils
 
 
 class TestNewArticle(BaseTestCase):

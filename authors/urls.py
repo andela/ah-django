@@ -56,4 +56,6 @@ urlpatterns = [
         'authors.apps.notifications.urls',
         'notifications'),
         namespace='notifications')),
+    url(r'api/', include(('authors.apps.bookmark.urls',
+                          'bookmark'), namespace='bookmark'))
 ]

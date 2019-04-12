@@ -14,6 +14,7 @@ django.setup()
 
 User = get_user_model()
 
+
 class BaseTestCase(APITestCase):
     """
         Holds the base authentication attributes and test methods
@@ -23,7 +24,6 @@ class BaseTestCase(APITestCase):
         """
             Creates reusable mock data and test functions.
         """
-
 
         self.client = APIClient()
         self.registration_path = reverse('authentication:activation')

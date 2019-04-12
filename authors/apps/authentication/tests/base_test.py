@@ -37,7 +37,7 @@ class BaseTestCase(APITestCase):
         self.email1 = 'reportguy99'
         self.testuser = User.objects.create_user(self.username, self.email)
         # Article model imported here as it has to wait for django.setup()
-        from ...articles.models import Article, Report
+        from ...articles.models import Article
         self.article = Article.objects.create(slug='test-slug',
                                               tagList=['test'],
                                               author=self.testuser)

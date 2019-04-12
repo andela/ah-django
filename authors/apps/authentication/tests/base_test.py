@@ -3,6 +3,7 @@
 """
 
 from rest_framework.test import APITestCase, APIClient
+from rest_framework_jwt import utils
 from django.urls import reverse
 from django.test.client import RequestFactory
 from rest_framework_jwt.compat import get_user_model
@@ -34,8 +35,12 @@ class BaseTestCase(APITestCase):
         self.email = 'testguy99'
         self.testuser = User.objects.create_user(self.username, self.email)
         # Article model imported here as it has to wait for django.setup()
+        self.payload = utils.jwt_payload_handler(self.testuser)
+        self.token = utils.jwt_encode_handler(self.payload)
+        self.hauth = 'Bearer {0}'.format(self.token)
         from ...articles.models import Article
         self.article = Article.objects.create(slug='test-slug',
+                                              body="some text about something",
                                               tagList=['test'],
                                               author=self.testuser)
         self.article_details = reverse('articles:article_details',
@@ -47,6 +52,16 @@ class BaseTestCase(APITestCase):
             'authentication:social_authentication')
         self.factory = RequestFactory()
         self.forgot_password_url = reverse('authentication:forgot_password')
+        self.client.post(
+            reverse('highlights:create-highlight',
+                    kwargs={"slug": "test-slug"}), {
+                        "highlight_object":
+                        {"highlight": "text about",
+                         "comment": "This quote is innacurate."}
+            },
+            HTTP_AUTHORIZATION=self.hauth,
+            format='json'
+        )
 
         self.user1 = {
             "user": {

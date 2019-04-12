@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'authors.apps.favorites',
     'authors.apps.bookmark',
     'authors.apps.stats',
+    'authors.apps.highlights',
 
     'drf_yasg',
     'django_inlinecss',

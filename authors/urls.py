@@ -61,4 +61,6 @@ urlpatterns = [
     url(r'api/', include((
         'authors.apps.stats.urls', 'reader_stats'),
         namespace='reader_stats')),
+    url(r'api/', include(('authors.apps.highlights.urls',
+                          'highlights'), namespace='highlights')),
 ]

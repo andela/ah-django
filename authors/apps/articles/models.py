@@ -54,3 +54,16 @@ class ArticleRating(models.Model):
 
 
 post_save.connect(article_created, sender=Article)
+
+
+class Report(models.Model):
+    """
+    Model for reporting article
+    """
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    reported_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    viewed = models.BooleanField(default=False)
+    violation = models.BooleanField(default=False)
+    action = models.BooleanField(default=False)
+    message = models.CharField(max_length=200)
+    create_at = models.DateTimeField(auto_now_add=True)

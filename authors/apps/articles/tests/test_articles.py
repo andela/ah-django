@@ -1,5 +1,4 @@
 from ...authentication.tests.base_test import BaseTestCase
-from django.urls import reverse
 from rest_framework_jwt import utils
 from ..models import Article, Report
 from ..serializers import ArticleSerializer, ReportSerializer
@@ -326,10 +325,10 @@ class ArticleDetails(BaseTestCase):
         payload = utils.jwt_payload_handler(self.testuser)
         token = utils.jwt_encode_handler(payload)
         auth = 'Bearer {0}'.format(token)
-        res = self.client.post(self.report_article,
-                               message,
-                               HTTP_AUTHORIZATION=auth,
-                               format='json')
+        self.client.post(self.report_article,
+                         message,
+                         HTTP_AUTHORIZATION=auth,
+                         format='json')
         self.login_superuser()
         url = self.report_actions
         response = self.client.get(url)

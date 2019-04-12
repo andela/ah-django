@@ -9,6 +9,10 @@ from rest_framework.views import APIView
 from django_social_share.templatetags import social_share
 from django.urls import reverse
 
+from .models import ArticleRating, Article, Report
+from .serializers import ArticleSerializer, ReportSerializer
+from .serializers import RateArticleSerializer
+from ..core.permissions import IsOwnerOrReadOnly
 from django.template.defaultfilters import slugify
 from django.db.models import Avg
 
@@ -321,10 +325,10 @@ class ReportArticleView(generics.GenericAPIView):
         try:
             article = Article.objects.get(slug=slug)
         except Article.DoesNotExist:
-            data = {
+            return Response ({
                 'error': f'Aricles with slug {slug} nonexistent'
-            }
-            status_ = status.HTTP_404_NOT_FOUND
+            },
+            status=status.HTTP_404_NOT_FOUND)
         new_text = str(request.data.get('message', '')).strip()
         if not new_text:
             return Response({

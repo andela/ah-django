@@ -174,7 +174,7 @@ class BaseTestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + response)
 
     def create_superuser(self, email, username, password):
-        user = User.objects.create_superuser(
+        User.objects.create_superuser(
             email=email,
             username=username, password=password)
 

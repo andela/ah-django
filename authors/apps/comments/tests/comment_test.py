@@ -32,8 +32,6 @@ class TestComment(CommentsBaseTestCase):
 
         path = '/api/articles/missing-article/comments'
         res = self.post_article_comment(path)
-        print(res.json())
-
         self.assertIn(fail_msg, res.json().get('errors')
                       .get('detail'))
 

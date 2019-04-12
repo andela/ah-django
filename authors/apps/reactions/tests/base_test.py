@@ -51,7 +51,7 @@ class BaseTestCase(APITestCase):
             'article': {
                 'title': 'Funny things on the keyboard',
                 'description': 'Suggestion for the \
-            name of that other funny thing',
+                    name of that other funny thing',
                 'body': 'Now how do we go about this other thing...',
                 'author': 1
             }

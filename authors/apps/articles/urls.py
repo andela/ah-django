@@ -1,8 +1,9 @@
 from django.conf.urls import url
+from django.urls.conf import path
 
 from .views import (
     ArticleList, ArticleDetails, NewArticle, RateArticle,
-    SearchArticlesList, ShareArticlesApiView
+    SearchArticlesList, ReadArticleView, ShareArticlesApiView
 )
 
 
@@ -19,4 +20,6 @@ urlpatterns = [
         name='rate_article'),
     url(r'^articles/(?P<slug>.+)/$', ArticleDetails.as_view(),
         name='article_details'),
+    path('articles/<slug:slug>/read', ReadArticleView.as_view(),
+         name='read_article'),
 ]

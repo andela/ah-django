@@ -5,6 +5,7 @@ from authors.apps.reactions.models import UserReaction
 from authors.apps.authentication.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.postgres.fields import ArrayField
+from django.utils import timezone
 from django.db import models
 from authors.apps.notifications.signals import article_created
 
@@ -23,12 +24,26 @@ class Article(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
     user_reaction = GenericRelation(UserReaction, related_query_name='article')
     reading_time = models.CharField(blank=True, null=True, max_length=100)
+    reads = models.PositiveIntegerField(default=0)
+    views = models.PositiveIntegerField(default=0)
 
     class Meta:
         ordering = ["-id"]
 
     def __str__(self):
         return self.title
+
+    def get_view_interval(self, author, days=30):
+        """
+            Show views made on the last X days
+            Defaults to last 30 days
+        """
+        query = Article.objects.filter(
+            author=author,
+            updatedAt__lte=timezone.now(),
+            updatedAt__gte=timezone.now() - timezone.timedelta(days=days))
+
+        return query.aggregate(models.Sum('views')).get('views__sum') or 0
 
 
 class ArticleRating(models.Model):

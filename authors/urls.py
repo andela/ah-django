@@ -57,5 +57,8 @@ urlpatterns = [
         'notifications'),
         namespace='notifications')),
     url(r'api/', include(('authors.apps.bookmark.urls',
-                          'bookmark'), namespace='bookmark'))
+                          'bookmark'), namespace='bookmark')),
+    url(r'api/', include((
+        'authors.apps.stats.urls', 'reader_stats'),
+        namespace='reader_stats')),
 ]

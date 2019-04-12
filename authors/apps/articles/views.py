@@ -3,10 +3,11 @@ from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny)
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django_social_share.templatetags import social_share
+from django.urls import reverse
 from .models import Article, ArticleRating
 from .exceptions import NoResultsMatch
 from .serializers import ArticleSerializer, RateArticleSerializer
-from .models import Article
 from ..core.permissions import IsOwnerOrReadOnly
 from django.template.defaultfilters import slugify
 from django.db.models import Avg
@@ -144,6 +145,53 @@ class RateArticle(generics.CreateAPIView):
             .aggregate(Avg('rating'))
         return Response({"detail": "rating posted", "avg": avg['rating__avg']},
                         status=status.HTTP_201_CREATED)
+
+
+class ShareArticlesApiView(APIView):
+    """
+    Implements the functionality for sharing
+    """
+    permission_classes = (IsAuthenticated,)
+
+    def get(self, request, **kwargs):
+        """ Share to social media
+
+        Shares to Reddit, Facebook, Twitter and Linkedin
+         """
+        context = {"request": request}
+
+        platform = kwargs['platform']
+        slug = kwargs['slug']
+
+        article = Article.objects.get(slug=slug)
+
+        if article is None:
+            return Response({
+                "Error": "Article not found"
+            }, status.HTTP_404_NOT_FOUND)
+
+        article_url = request.build_absolute_uri(
+            reverse("articles:article_details", kwargs={"slug": article.slug})
+        )
+
+        if platform == 'facebook':
+            link = social_share.post_to_facebook_url(
+                context, article_url)['facebook_url']
+        elif platform == 'twitter':
+            link = social_share.post_to_twitter_url(
+                context, "{}".format(article.title), article_url)['tweet_url']
+        elif platform == 'reddit':
+            link = social_share.post_to_reddit_url(
+                context, article.title, article_url)['reddit_url']
+        elif platform == 'linkedin':
+            link = social_share.post_to_linkedin_url(
+                context, article.title, article_url)['linkedin_url']
+
+        return Response({"share": {
+            "link": link,
+            "resource_title": article.title,
+            "provider": platform
+        }}, status.HTTP_200_OK)
 
 
 class SearchArticlesList(generics.ListAPIView):

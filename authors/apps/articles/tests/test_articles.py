@@ -1,8 +1,9 @@
 from rest_framework import status
+from django.urls import reverse
 from ...authentication.tests.base_test import BaseTestCase
 from rest_framework_jwt import utils
-from ..serializers import ArticleSerializer
-from ..models import Article
+from ..serializers import ArticleSerializer, ReportSerializer
+from ..models import Article, Report
 from ..views import NewArticle
 
 
@@ -68,8 +69,6 @@ class ArticleDetails(BaseTestCase):
         response = self.client.get(self.articles_feed)
         articles = Article.objects.all()
         serializer = ArticleSerializer(articles, many=True)
-        print("response.data==>", response.data['results'])
-        print("serializer.data", serializer.data)
         self.assertEqual(response.data['results'], serializer.data[0:5])
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
@@ -270,3 +269,108 @@ class ArticleDetails(BaseTestCase):
             "/api/articles/search?title={}".format(self.title),
             content_type='application/json')
         self.assertEqual(response.status_code, 200)
+
+    def test_report_article(self):
+        """
+        test report a single article
+        """
+        message = {
+            "message": "I hate this article"
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        res = self.client.post(self.report_article,
+                               message, HTTP_AUTHORIZATION=auth,
+                               format='json')
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+
+    def test_admin_get_all_reported_articles(self):
+        """
+        test admin see all reported articles
+        """
+        self.login_superuser()
+        response = self.client.get(self.view_reports)
+        reports = Report.objects.all()
+        serializer = ReportSerializer(reports, many=True)
+        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_admin_1get_single_report(self):
+        """
+        test admin see all reported articles
+        """
+        message = {
+            "message": "I hate this article"
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        self.client.post(self.report_article,
+                         message,
+                         HTTP_AUTHORIZATION=auth,
+                         format='json')
+        self.login_superuser()
+        url = self.report_actions
+        response = self.client.get(url)
+        self.assertTrue(response.data['viewed'], True)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_normaluser_return_reports(self):
+        """
+        test normal user return reports
+        """
+        message = {
+            "message": "I hate this article"
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        self.client.post(self.report_article,
+                         message, HTTP_AUTHORIZATION=auth,
+                         format='json')
+        response = self.client.get(self.view_reports)
+        reports = Report.objects.all()
+        ReportSerializer(reports, many=True)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_admin_put_single_report(self):
+        """
+        test admin see all reported articles
+        """
+        message = {
+            "message": "I hate this article"
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        report = self.client.post(self.report_article,
+                                  message,
+                                  HTTP_AUTHORIZATION=auth,
+                                  format='json')
+        report_id = report.data['id']
+        self.login_superuser()
+        url = reverse('articles:report_actions', kwargs={'pk': report_id})
+        response = self.client.put(url)
+        self.assertTrue(response.data['violation'], True)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_admin_delete_single_report(self):
+        """
+        test admin delete single report
+        """
+        message = {
+            "message": "I hate this article"
+        }
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        report = self.client.post(self.report_article,
+                                  message,
+                                  HTTP_AUTHORIZATION=auth,
+                                  format='json')
+        report_id = report.data['id']
+        self.login_superuser()
+        url = reverse('articles:report_actions', kwargs={'pk': report_id})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

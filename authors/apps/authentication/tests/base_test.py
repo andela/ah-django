@@ -32,6 +32,7 @@ class BaseTestCase(APITestCase):
         self.articles_feed = reverse('articles:articles_feed')
         self.profile_url = reverse('profiles:list_profiles')
 
+        self.view_reports = reverse('articles:view_reports')
         self.username = 'testguy99'
         self.email = 'testguy99'
         self.testuser = User.objects.create_user(self.username, self.email)
@@ -47,6 +48,10 @@ class BaseTestCase(APITestCase):
                                               author=self.testuser)
         self.article_details = reverse('articles:article_details',
                                        kwargs={'slug': "test-slug"})
+        self.report_article = reverse('articles:report_article',
+                                      kwargs={'slug': "test-slug"})
+        self.report_actions = reverse('articles:report_actions',
+                                      kwargs={'pk': 1})
         self.login_path = reverse('authentication:login')
         self.article_rating = reverse('articles:rate_article',
                                       kwargs={'slug': "test-slug"})
@@ -178,3 +183,34 @@ class BaseTestCase(APITestCase):
             self.forgot_password_url,
             data=data,
             format="json")
+
+    def add_credentials(self, response):
+        """adds authentication credentials in the request header"""
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + response)
+
+    def report_article(self, report_data):
+        self.login_user(self.user)
+        self.article
+        reverse('report_article', kwargs={'slug': "testslug"})
+        response = self.client.post(data=report_data, format='json')
+        return response
+
+    def create_superuser(self, email, username, password):
+        User.objects.create_superuser(
+            email=email,
+            username=username, password=password)
+
+    def login_user(self, data):
+        return self.client.post(
+            self.login_path,
+            data,
+            format='json'
+        ).data
+
+    def login_superuser(self):
+        username = self.user['user']['username']
+        password = self.user['user']['password']
+        email = self.user['user']['email']
+        self.create_superuser(email, username, password)
+        response = self.login_user(self.user)
+        self.add_credentials(response['token'])

@@ -22,6 +22,9 @@ from rest_framework.renderers import JSONRenderer
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.exceptions import ObjectDoesNotExist
 
+from asgiref.sync import async_to_sync
+from authors.consumers import send_notification
+
 
 class ArticlesPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
@@ -54,6 +57,12 @@ class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
             )
             serializer.is_valid(raise_exception=True)
             serializer.save(author=self.request.user)
+            msg = "New article from {} named {}".format(self.request.user,
+                                                        article['title'])
+            notification = {
+                'send_to': ['new_article_notification'],
+                'message': msg}
+            async_to_sync(send_notification)(notification)
             return Response({'article': serializer.data},
                             status=status.HTTP_201_CREATED)
         else:
@@ -172,8 +181,8 @@ class LikeView(APIView):
     def post(self, request, slug, *args, **kwargs):
         """Like
         Arguments:
-            request {[type]} -- [description]
-            slug {[type]} -- [description]
+            request {[type]} -- [passed by django ]
+            slug {[type]} -- [Slug of the article to like]
         """
         actions = {'like': 1, 'dislike': -1}
         data = request.data

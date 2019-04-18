@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'oauth2_provider',
     'social_django',
     'rest_framework_social_oauth2',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -136,8 +137,15 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
 
 WSGI_APPLICATION = 'authors.wsgi.application'
-
-
+ASGI_APPLICATION = "authors.routing.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+        }
+    },
+}
 DRFSO2_PROPRIETARY_BACKEND_NAME = 'Facebook'
 DRFSO2_URL_NAMESPACE = ''
 

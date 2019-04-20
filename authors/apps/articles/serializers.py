@@ -3,6 +3,7 @@ from .models import Articles, Rating, Likes, Comments, Favorites
 from django.db.models import Avg
 from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.profiles.serializers import ProfileSerializer
+import readtime
 
 
 class ArticlesSerializer(serializers.ModelSerializer):
@@ -13,6 +14,7 @@ class ArticlesSerializer(serializers.ModelSerializer):
         read_only=True, default=False)
     favoritesCount = serializers.SerializerMethodField(
         read_only=True, default=0)
+    read_time = serializers.SerializerMethodField()
 
     class Meta:
         model = Articles
@@ -33,6 +35,7 @@ class ArticlesSerializer(serializers.ModelSerializer):
             'tags',
             'favorited',
             'favoritesCount',
+            'read_time',
         ]
         read_only_fields = ["id", "author", "slug", "created_at", "avg_rating",
                             "rating_count"]
@@ -68,6 +71,11 @@ class ArticlesSerializer(serializers.ModelSerializer):
             return True
         else:
             return False
+
+    def get_read_time(self, obj):
+        read_time = str(readtime.of_text(obj.body))
+
+        return read_time
 
 
 class RatingSerializer(serializers.ModelSerializer):

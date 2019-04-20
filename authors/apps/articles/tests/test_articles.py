@@ -318,3 +318,17 @@ class CURDArticlesTestCase(APITestCase):
         )
         self.assertEqual(list_articles.status_code,
                          status.HTTP_200_OK)
+
+    def test_get_article_read_time(self):
+        """ Test time it takes to read an article"""
+
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        response = self.client.get(
+            self.get_article_url.format(article_slug=article_slug)
+        )
+        data = json.loads(response.content.decode('utf-8'))
+        self.assertEqual(response.status_code,
+                         status.HTTP_200_OK)
+        self.assertEqual(data['read_time'], '1 min read')

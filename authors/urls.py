@@ -24,6 +24,6 @@ urlpatterns = [
     url(r'^logout/$', auth_views.LogoutView.as_view(), name='logout'),
     url(r'^oauth/', include('rest_framework_social_oauth2.urls')),
     url(r'^api/', include('authors.apps.articles.urls')),
-    # path('api/auth/oauth/', include('rest_framework_social_oauth2.urls'))
     url(r'^api/', include('authors.apps.profiles.urls')),
+    url(r'^api/', include('authors.apps.bookmarks.urls')),
 ]

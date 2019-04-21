@@ -332,3 +332,164 @@ class CURDArticlesTestCase(APITestCase):
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
         self.assertEqual(data['read_time'], '1 min read')
+
+# Social sharing tests
+    def test_share_via_email(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/email/"
+        payload = {"email": "tonywamuriithi@gmail.com"
+                   }
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            data=payload, format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_200_OK)
+        self.assertIn("shared_link", share_article.data)
+
+    def test_share_via_facebook(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/facebook/"
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_200_OK)
+        self.assertIn("shared_link", share_article.data)
+
+    def test_share_via_twitter(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/twitter/"
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_200_OK)
+        self.assertIn("shared_link", share_article.data)
+
+    def test_share_via_email_non_existent_article(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}567/share/email/"
+        payload = {"email": "tonywamuriithi@gmail.com"
+                   }
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            data=payload, format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_share_via_facebook_non_existent_article(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_artcle_url = "/api/articles/{article_slug}5/share/facebook/"
+        share_article = self.client.post(
+            self.share_artcle_url.format(article_slug=article_slug),
+            format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_share_via_twitter_non_existent_article(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}5/share/twitter/"
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_share_via_email_without_receivers_email(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/email/"
+        payload = {"email": ""
+                   }
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            data=payload, format='json'
+        )
+
+        self.assertEqual(share_article.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+    def test_share_via_email_with_invalid_receivers_email(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/email/"
+        payload = {"email": "tonywamuriithigmail.com"
+                   }
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            data=payload, format='json'
+        )
+
+        self.assertEqual(share_article.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+    def test_share_via_email_by_others(self):
+        article = self.create_article(
+            self.article)
+        self.client.credentials()
+        credentials2 = json.loads(self.signup2.content)[
+            "user"]["token"]
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + credentials2)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/email/"
+        payload = {"email": "tonywamuriithi@gmail.com"
+                   }
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            data=payload, format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_200_OK)
+        self.assertIn("shared_link", share_article.data)
+
+    def test_share_via_facebook_by_others(self):
+        article = self.create_article(
+            self.article)
+        self.client.credentials()
+        credentials2 = json.loads(self.signup2.content)[
+            "user"]["token"]
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + credentials2)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/facebook/"
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            format='json'
+        )
+        self.assertEqual(share_article.status_code, status.HTTP_200_OK)
+        self.assertIn("shared_link", share_article.data)
+
+    def test_share_via_twitter_by_others(self):
+        article = self.create_article(
+            self.article)
+        self.client.credentials()
+        credentials2 = json.loads(self.signup2.content)[
+            "user"]["token"]
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + credentials2)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.share_article_url = "/api/articles/{article_slug}/share/twitter/"
+        share_article = self.client.post(
+            self.share_article_url.format(article_slug=article_slug),
+            format='json'
+        )
+
+        self.assertEqual(share_article.status_code, status.HTTP_200_OK)
+        self.assertIn("shared_link", share_article.data)

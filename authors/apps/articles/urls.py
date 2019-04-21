@@ -2,7 +2,8 @@ from django.conf.urls import url
 from django.urls import path
 from .views import (
     CreateArticleView, SingleArticleView, RatingView, LikeView,
-    CreateCommentView, UpdateDeleteCommentView, TagView, FavouritesView
+    CreateCommentView, UpdateDeleteCommentView, TagView, FavouritesView,
+    ShareViaEmail, ShareViaFacebookAndTwitter
 )
 
 urlpatterns = [
@@ -34,6 +35,15 @@ urlpatterns = [
          FavouritesView.as_view(), name="favorite-article"),
 
     path('favorite/articles',
-         FavouritesView.as_view(), name="favorites")
+         FavouritesView.as_view(), name="favorites"),
+    path('articles/<slug>/share/email/',
+         ShareViaEmail.as_view(), name='email_share'
+         ),
+    path('articles/<slug>/share/facebook/',
+         ShareViaFacebookAndTwitter.as_view(), name='facebook_share'
+         ),
+    path('articles/<slug>/share/twitter/',
+         ShareViaFacebookAndTwitter.as_view(), name='twitter_share'
+         )
 
 ]

@@ -8,19 +8,17 @@ from .serializers import (
     ArticlesSerializer, LikesSerializer, RatingSerializer, CommentsSerializer,
     FavoritesSerializer, TagsSerializer)
 from ..authentication.models import User
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404
-from .models import Rating, Comments
-from .serializers import RatingSerializer, CommentsSerializer
 from django_filters import rest_framework as filters
 from .filters import ArticleFilter
-
 from datetime import datetime
 from rest_framework.renderers import JSONRenderer
-from django_filters.rest_framework import DjangoFilterBackend
-from django.core.exceptions import ObjectDoesNotExist
+from django.template.loader import render_to_string
+from django.core.mail import send_mail
+import re
+from django.conf import settings
 
 from asgiref.sync import async_to_sync
 from authors.consumers import send_notification
@@ -419,7 +417,7 @@ class TagView(ListAPIView):
 
 class FavouritesView(APIView):
     """
-        A user should be able to add an article to their favorites and 
+        A user should be able to add an article to their favorites and
         or unfavorite the article
     """
     lookup_field = 'article_slug'
@@ -508,3 +506,104 @@ class FavouritesView(APIView):
                     "error": "Article favorite not found"
                 }, status=status.HTTP_404_NOT_FOUND
             )
+
+
+class ShareViaEmail(CreateAPIView):
+    """
+        Share Articles via email
+    """
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'slug'
+
+    def post(self, request, slug):
+        """
+            POST a request to /api/articles/<slug>/share/email/
+            share the article via email
+        """
+        if Articles.objects.filter(slug=slug).exists():
+
+            email = request.data['email']
+
+            if email is None:
+                return Response({
+                    'message': 'Please provide an email',
+                },
+                    status=status.HTTP_400_BAD_REQUEST)
+            elif re.search(r"^[\w\.\+\-]+\@[\w]+\.[a-z]{2,3}$", email) is None:
+                return Response({
+                    'message': 'Please enter a valid email'
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            username = request.user.username
+
+            # format the email
+            host = request.get_host()
+            protocol = request.scheme
+            shared_link = protocol + '://' + host + '/api/articles/' + slug
+            subject = "Authors Haven"
+            article_title = slug
+            message = render_to_string(
+                'article_share.html', {
+                    'username': str(username).capitalize(),
+                    'title': article_title,
+                    'link': shared_link
+                })
+            to_email = email
+            from_email = settings.FROM_EMAIL
+
+            send_mail(
+                subject,
+                message,
+                from_email, [
+                    to_email,
+                ],
+                html_message=message,
+                fail_silently=False)
+
+            message = {
+                'message': 'Article shared successfully',
+                'shared_link': shared_link
+            }
+            return Response(message, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Article does not exist"},
+                            status=status.HTTP_404_NOT_FOUND)
+
+
+class ShareViaFacebookAndTwitter(CreateAPIView):
+    """
+        Share Articles via facebook or twitter
+    """
+    permission_classes = (IsAuthenticated,)
+    lookup_field = 'slug'
+
+    def post(self, request, slug):
+        """
+            Share Article depending on the POST request either
+            /api/articles/<slug>/share/facebook/ or
+            /api/articles/<slug>/share/twitter/
+        """
+        if Articles.objects.filter(slug=slug).exists():
+
+            host = request.get_host()
+            protocol = request.scheme
+            article_link = protocol + '://' + host + '/api/articles/' + slug
+
+            facebook_url = "https://www.facebook.com/sharer/sharer.php?u="
+            twitter_url = "https://twitter.com/intent/tweet?text="
+            shared_link = None
+            if request.path == '/api/articles/{}/share/facebook/'.format(slug):
+                shared_link = facebook_url + article_link
+
+            elif request.path == (
+                            '/api/articles/{}/share/twitter/'.format(slug)):
+                shared_link = twitter_url + article_link
+
+            message = {
+                'message': 'Article shared successfully',
+                'shared_link': shared_link
+            }
+            return Response(message, status=status.HTTP_200_OK)
+        else:
+            return Response({"error": "Article does not exist"},
+                            status=status.HTTP_404_NOT_FOUND)

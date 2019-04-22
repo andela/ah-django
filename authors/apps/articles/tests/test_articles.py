@@ -331,7 +331,7 @@ class CURDArticlesTestCase(APITestCase):
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
-        self.assertEqual(data['read_time'], '1 min read')
+        self.assertEqual(data['article']['read_time'], '1 min read')
 
 # Social sharing tests
     def test_share_via_email(self):

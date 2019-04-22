@@ -15,7 +15,6 @@ Including another URLconf
 """
 from django.conf.urls import include, url
 from django.contrib import admin
-from django.urls import path
 from django.contrib.auth import views as auth_views
 
 urlpatterns = [
@@ -27,4 +26,5 @@ urlpatterns = [
     url(r'^api/', include('authors.apps.comments.urls')),
     url(r'^api/', include('authors.apps.profiles.urls')),
     url(r'^api/', include('authors.apps.bookmarks.urls')),
+    url(r'^api/', include('authors.apps.reports.urls'))
 ]

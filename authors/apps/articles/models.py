@@ -19,8 +19,7 @@ class Articles(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     slug = models.SlugField(max_length=200, unique=True)
     tags = ArrayField(models.CharField(max_length=20), default=list)
-    # favorited = models.BooleanField(default=False)
-    # favoritesCount = models.IntegerField(default=0)
+    flag = models.CharField(max_length=150, default="")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

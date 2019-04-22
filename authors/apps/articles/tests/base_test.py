@@ -1,4 +1,5 @@
 from rest_framework.test import APITestCase, APIClient
+from ...authentication.models import User
 import json
 
 
@@ -39,6 +40,13 @@ class BaseTestCase(APITestCase):
             "body": "This article body is edited"
         }
 
+        self.super_user = {
+            "user": {
+                "email": "admin@gmail.com",
+                "password": "scorpion234"
+            }
+        }
+
         self.signup = self.client.post(
             "/api/users",
             self.user_signup,
@@ -51,6 +59,20 @@ class BaseTestCase(APITestCase):
             format="json"
         )
 
+        self.create_super_user = User.objects.create_superuser(
+            email=self.super_user["user"]["email"],
+            username="admin",
+            password=self.super_user["user"]["password"]
+        )
+
+        self.login_super_user = self.client.post(
+            "/api/users/login",
+            self.super_user,
+            format="json"
+        )
+
+        self.admin_credentials = json.loads(self.login_super_user.content)[
+            "user"]["token"]
         self.credentials = json.loads(self.signup.content)[
             "user"]["token"]
         self.client.credentials(

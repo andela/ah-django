@@ -8,7 +8,7 @@ from .serializers import (
     ArticlesSerializer, LikesSerializer, RatingSerializer,
     FavoritesSerializer, TagsSerializer)
 from ..authentication.models import User
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
@@ -86,7 +86,7 @@ class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
             GET /api/v1/articles/favorites/
         """
 
-        queryset = Articles.objects.get_queryset().order_by('id')
+        queryset = Articles.objects.filter(flag="").order_by('id')
         username = self.request.GET.get('favorited_by')
         if username:
             try:
@@ -108,10 +108,39 @@ class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
         return queryset
 
 
+class ListAllArticlesView(ListAPIView):
+    permission_classes = (IsAdminUser, )
+    serializer_class = ArticlesSerializer
+
+    def get_queryset(self):
+        queryset = Articles.objects.all()
+        return queryset
+
+
 class SingleArticleView(RetrieveUpdateDestroyAPIView):
-    lookup_field = 'slug'
     queryset = Articles.objects.all()
     serializer_class = ArticlesSerializer
+    lookup_field = 'slug'
+
+    def get(self, request, slug):
+        article = get_object_or_404(Articles, slug=slug)
+        serializer = self.serializer_class(article)
+        if article.flag != "":
+            if article.author == (
+                    self.request.user or self.request.user.is_superuser):
+                return Response(
+                    {"article": serializer.data}, status=status.HTTP_200_OK
+                )
+            else:
+                return Response(
+                    {"detail":
+                     "You do not have permission to perform this action."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        else:
+            return Response(
+                {"article": serializer.data}, status=status.HTTP_200_OK
+            )
 
     def put(self, request, slug, *args, **kwargs):
 

@@ -50,7 +50,7 @@ INSTALLED_APPS = [
     'authors.apps.articles',
     'authors.apps.bookmarks',
     'authors.apps.comments',
-
+    'authors.apps.reports',
 
     'oauth2_provider',
     'social_django',

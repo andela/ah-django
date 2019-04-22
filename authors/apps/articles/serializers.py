@@ -103,19 +103,6 @@ class LikesSerializer(serializers.ModelSerializer):
         return Articles.objects.create(**validated_data)
 
 
-class CommentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comments
-        fields = [
-            'id',
-            'article_slug',
-            'created_at',
-            'updated_at',
-            'body',
-            'author'
-        ]
-        read_only_fields = ["id"]
-
 
 class TagsSerializer(serializers.ModelSerializer):
 

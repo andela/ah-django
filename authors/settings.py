@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'authors.apps.profiles',
     'authors.apps.articles',
     'authors.apps.bookmarks',
+    'authors.apps.comments',
 
 
     'oauth2_provider',

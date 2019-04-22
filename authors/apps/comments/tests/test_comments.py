@@ -176,3 +176,83 @@ class TestCommentsOperations(APITestCase):
 
         self.assertEqual(update_comment.status_code,
                          status.HTTP_404_NOT_FOUND)
+
+    def test_create_comment_with_highlighted_text(self):
+        article = self.client.post(
+            self.post_article_url,
+            data=self.article,
+            format='json', follow=True
+        )
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.create_comment['comment']['highlighted_text'] = "article body"
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+
+        self.assertEqual(comments.status_code,
+                         status.HTTP_201_CREATED)
+
+    def test_create_comment_with_wrong_highlighted_text(self):
+        article = self.client.post(
+            self.post_article_url,
+            data=self.article,
+            format='json', follow=True
+        )
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+        self.create_comment['comment']['highlighted_text'] = "This text is not on the body"
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+
+        self.assertEqual(comments.status_code,
+                         status.HTTP_400_BAD_REQUEST)
+
+    def test_update_comment_with_highlighted_text(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+        comm = json.loads(comments.content)
+        comm_id = comm['id']
+        self.edit_comment['comment']['highlighted_text'] = "article body"
+        update_comment = self.client.put(
+            self.delete_put_url.format(article_slug=article_slug,
+                                       comm_id=comm_id),
+            data=self.edit_comment, format='json'
+        )
+
+        self.assertEqual(update_comment.status_code,
+                         status.HTTP_200_OK)
+
+    def test_update_comment_with_wrong_highlighted_text(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+        comm = json.loads(comments.content)
+        comm_id = comm['id']
+        self.edit_comment['comment']['highlighted_text'] = "wrong highlight"
+        update_comment = self.client.put(
+            self.delete_put_url.format(article_slug=article_slug,
+                                       comm_id=comm_id),
+            data=self.edit_comment, format='json'
+        )
+
+        self.assertEqual(update_comment.status_code,
+                         status.HTTP_400_BAD_REQUEST)

@@ -12,6 +12,7 @@ urlpatterns = [
          UpdateDeleteCommentView.as_view(),
          name="update-delete-comment"),
 
+
     path('comments/<int:id>/history',
          CommentHistoryView.as_view(),
          name="comment-history")

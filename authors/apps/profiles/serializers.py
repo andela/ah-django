@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from authors import settings
-
+from authors.apps.notifications.middleware import RequestMiddleware
 
 from .models import (Profile, Follow)
 
@@ -49,10 +49,8 @@ class ProfileSerializer(serializers.ModelSerializer):
         get to know if the user requesting to view this profile
         follows the user in question
         """
-        context = self.context
-        if "request" not in context:
-            return False
-        request = context["request"]
+        request = RequestMiddleware(
+            get_response=None).thread_local.current_request
         if request.user.is_authenticated is False:
             return False
         try:

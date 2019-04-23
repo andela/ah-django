@@ -9,7 +9,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
 
     async def connect(self):
         """This method will allow a new user to connect to a notification
-            group 
+            group
         """
 
         self.notification_kwargs = self.scope['url_route']['kwargs']
@@ -28,7 +28,7 @@ class NotificationConsumer(AsyncWebsocketConsumer):
         """Disconnects a user from a notification group
 
         Arguments:
-            close_code {[type]} -- [Reason for closure could be 
+            close_code {[type]} -- [Reason for closure could be
             connection(managed by asgi)]
         """
 

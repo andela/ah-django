@@ -7,7 +7,7 @@ class CommentsSerializer(serializers.ModelSerializer):
     article = serializers.SerializerMethodField()
     user = serializers.SerializerMethodField()
     highlighted_text = serializers.CharField(
-        allow_null=True, min_length=4, required=False)
+        allow_null=True, allow_blank=True, min_length=4, required=False)
 
     class Meta:
         model = Comments

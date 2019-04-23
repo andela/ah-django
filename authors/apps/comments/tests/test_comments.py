@@ -10,6 +10,7 @@ class TestCommentsOperations(APITestCase):
         self.post_article_url = '/api/articles/'
         self.post_get_url = '/api/articles/{article_slug}/comments'
         self.delete_put_url = '/api/articles/{article_slug}/comments/{comm_id}'
+        self.history_url = '/api/comments/{id}/history'
         self.user_signup = {
             "user": {
                 "email": "testuser@gmail.com",
@@ -256,3 +257,35 @@ class TestCommentsOperations(APITestCase):
 
         self.assertEqual(update_comment.status_code,
                          status.HTTP_400_BAD_REQUEST)
+
+    def test_checking_comment_history(self):
+        article = self.create_article(self.article)
+        data = json.loads(article.content)
+        article_slug = data['article']['slug']
+
+        comments = self.client.post(
+            self.post_get_url.format(article_slug=article_slug),
+            data=self.create_comment,
+            format='json'
+        )
+        comm = json.loads(comments.content)
+        comm_id = comm['id']
+
+        self.client.put(self.delete_put_url.format(
+                                       article_slug=article_slug,
+                                       comm_id=comm_id),
+                        data=self.edit_comment, format='json'
+                        )
+
+        history = self.client.get(
+            self.history_url.format(id=comm_id))
+
+        self.assertEqual(history.status_code,
+                         status.HTTP_200_OK)
+
+    def test_check_history_of_nonexisting_comment(self):
+        history = self.client.get(
+            self.history_url.format(id=1))
+
+        self.assertEqual(history.status_code,
+                         status.HTTP_404_NOT_FOUND)

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Comments
+from .history import CommentHistory as history
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -42,3 +43,18 @@ class CommentsSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(msg)
         else:
             return text
+
+
+class CommentHistorySerializer(serializers.ModelSerializer):
+    comment_history = serializers.SerializerMethodField()
+    comment_id = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Comments
+        fields = ('comment_id', 'comment_history')
+
+    def get_comment_history(self, obj):
+        return history().get_comment_updates(obj.comment_history)
+
+    def get_comment_id(self, obj):
+        return obj.id

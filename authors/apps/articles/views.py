@@ -13,7 +13,6 @@ from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from .filters import ArticleFilter
-from datetime import datetime
 from rest_framework.renderers import JSONRenderer
 from django.template.loader import render_to_string
 from django.core.mail import send_mail
@@ -287,7 +286,6 @@ class LikeView(APIView):
                  'dislikes': dislikesCount,
                  'total': likesCount+dislikesCount}
         return count
-
 
 
 class TagView(ListAPIView):

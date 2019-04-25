@@ -38,7 +38,7 @@ class RegistrationTestCase(BaseTestCase):
         first_alphabet = {
             "user": {
                 "email": "acemember@gmail.com",
-                "username": "Ace_Member",
+                "username": "ace_member",
                 "password": "acemember2019"
             }
         }
@@ -50,6 +50,6 @@ class RegistrationTestCase(BaseTestCase):
             format="json")
         self.assertEqual(profiles.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(profiles.content)[
-                         0]["username"], "Ace_Member")
+                         0]["username"], "ace_member")
         self.assertEqual(json.loads(profiles.content)[
-                         1]["username"], "PremierMember")
+                         1]["username"], "premiermember")

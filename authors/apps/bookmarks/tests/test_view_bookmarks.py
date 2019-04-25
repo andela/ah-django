@@ -13,7 +13,7 @@ class BookmarkTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "PremierMember",
+                "username": "premiermember",
                 "password": "premiermember2019"
             }
         }
@@ -68,7 +68,7 @@ class BookmarkTestCase(APITestCase):
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertIn('bookmarkers', res.data)
         self.assertEqual(json.loads(res.content)["bookmarkers"][0][
-                         "profile"]["username"], "PremierMember")
+                         "profile"]["username"], "premiermember")
 
     def test_view_bookmarkers_on_non_existent_article(self):
         res = self.client.get(

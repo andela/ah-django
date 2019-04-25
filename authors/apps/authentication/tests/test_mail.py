@@ -13,7 +13,7 @@ class EmailRegistrationTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "newmember@gmail.com",
-                "username": "New_Member",
+                "username": "new_member",
                 "password": "newmember000"
             }
         }

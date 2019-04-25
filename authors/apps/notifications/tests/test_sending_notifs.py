@@ -26,7 +26,7 @@ class EmailTest(APITestCase):
         user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "PremierMember",
+                "username": "premiermember",
                 "password": "premiermember2019"
             }
         }
@@ -63,7 +63,7 @@ class EmailTest(APITestCase):
         self.signupuser2()
         self.client.post(
             self.followuser_url.format(
-                "PremierMember"),
+                "premiermember"),
             HTTP_AUTHORIZATION='bearer {}'.format(self.token2),
             format="json")
 
@@ -117,7 +117,7 @@ class EmailTest(APITestCase):
         # and the new
         # email that is to be sent pertaining the new article.
         self.assertEqual(len(mail.outbox), 4)
-        self.assertEqual(mail.outbox[3].subject, "PremierMember's New Article")
+        self.assertEqual(mail.outbox[3].subject, "premiermember's New Article")
 
     def test_if_notification_will_be_sent_via_email_on_unsubscribing(self):
         self.user2followuser1()

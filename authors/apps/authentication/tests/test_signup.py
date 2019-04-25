@@ -12,14 +12,14 @@ class RegistrationTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "PremierMember",
+                "username": "premiermember",
                 "password": "premiermember2019"
             }
         }
         self.duplicate_user1email = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "Premier_Member_2",
+                "username": "premier_member_2",
                 "password": "premiermember2019"
             }
         }
@@ -27,14 +27,14 @@ class RegistrationTestCase(APITestCase):
         self.duplicate_user1username = {
             "user": {
                 "email": "premiermember2@gmail.com",
-                "username": "PremierMember",
+                "username": "premiermember",
                 "password": "premiermember2019"
             }
         }
 
         self.missing_email = {
             "user": {
-                "username": "Premier_Member",
+                "username": "premier_member",
                 "password": "premiermember2019"
             }
         }
@@ -211,5 +211,5 @@ class RegistrationTestCase(APITestCase):
                          status.HTTP_400_BAD_REQUEST)
         self.assertEqual(
             json.loads(res.content)["errors"]["username"],
-            ["""Ensure username has alphanumerics and underscore only.
+            ["""Ensure username has lowercase alphanumerics and underscore only.
         Username cannot begin with underscore or integer"""])

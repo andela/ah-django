@@ -15,7 +15,7 @@ class RegistrationTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "PremierMember",
+                "username": "premiermember",
                 "password": "premiermember2019"
             }
         }
@@ -28,7 +28,7 @@ class RegistrationTestCase(APITestCase):
         user_to_follow = {
             "user": {
                 "email": "premiermember2@gmail.com",
-                "username": "PremierMember2",
+                "username": "premiermember2",
                 "password": "premiermember2019"
             }
         }
@@ -65,7 +65,7 @@ class RegistrationTestCase(APITestCase):
         self.assertEqual(json.loads(res.content),
                          {
             "followers": [{
-                "username": "PremierMember2",
+                "username": "premiermember2",
                 "firstname": "",
                 "lastname": "",
                 "bio": "",
@@ -96,7 +96,7 @@ class RegistrationTestCase(APITestCase):
         self.assertEqual(follow_twice.status_code, status.HTTP_409_CONFLICT)
         self.assertEqual(json.loads(follow_twice.content),
                          {
-            "error": "You follow PremierMember already"
+            "error": "You follow premiermember already"
         })
 
     def test_follow_non_existent_user(self):
@@ -136,7 +136,7 @@ class RegistrationTestCase(APITestCase):
                 "fullname": " ",
                 "lastname": "",
                 "image": "",
-                "username": "PremierMember"
+                "username": "premiermember"
             }]
         })
 

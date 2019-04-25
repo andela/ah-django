@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Comments
+from .models import Comments, Like
 from .history import CommentHistory as history
 
 
@@ -58,3 +58,19 @@ class CommentHistorySerializer(serializers.ModelSerializer):
 
     def get_comment_id(self, obj):
         return obj.id
+
+
+class CommentsLikesSerializer(serializers.ModelSerializer):
+    """
+    Like dislike comments serializer
+    """
+
+    class Meta:
+        model = Like
+        fields = ('id', 'comment', 'user',
+                  'like', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'comment', 'user',
+                            'created_at', 'updated_at')
+
+    def create(self, validated_data):
+        return Like.objects.create(**validated_data)

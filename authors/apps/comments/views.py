@@ -2,11 +2,15 @@ from rest_framework.generics import (CreateAPIView, RetrieveAPIView,
                                      ListAPIView, RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Comments
+from .models import Comments, Like
 from ..articles.models import Articles
-from .serializers import (CommentsSerializer, CommentHistorySerializer)
+from .serializers import (CommentsSerializer,
+                          CommentHistorySerializer, CommentsLikesSerializer)
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from datetime import datetime
+from rest_framework.renderers import JSONRenderer
+import json
 
 
 class CreateCommentView(CreateAPIView, ListAPIView):
@@ -123,3 +127,87 @@ class CommentHistoryView(RetrieveAPIView):
         serializer = self.serializer_class(comment)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class LikeView(CreateAPIView):
+    """
+    LIke commet CRUD operations
+    """
+    permission_classes = (IsAuthenticated,)
+    serializer_class = CommentsLikesSerializer
+
+    def counter(self, id):
+        likes_queryset = Like.objects.likes().filter(comment=id)
+        dislikes_queryset = Like.objects.dislikes().filter(comment=id)
+        likesCount = likes_queryset.count()
+        dislikesCount = dislikes_queryset.count()
+        count = {'likes': likesCount,
+                 'dislikes': dislikesCount,
+                 'total': likesCount+dislikesCount}
+        return count
+
+    def post(self, request, id):
+        """
+        Post a like/dislike
+        """
+        actions = {
+            'like': 1,
+            'dislike': -1
+        }
+        data = request.data
+        action = data.get('action', None)
+        if not action:
+            return Response({'error': 'Please provide an action'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        comment = get_object_or_404(Comments, id=id)
+        user = self.request.user
+        actiondb = actions.get(action, 0)
+        like = {'like': actiondb}
+        try:
+            queryset = Like.objects.get(
+                user=user, comment=comment
+            )
+            queryset.updated_at = datetime.now()
+            queryset.like = actiondb
+            queryset.save()
+        except Like.DoesNotExist:
+            serializer = self.serializer_class(
+                data=like
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save(comment=comment, user=user)
+        counter = self.counter(id)
+        return Response(counter,
+                        status=status.HTTP_200_OK)
+
+    def get(self, request, id):
+        get_object_or_404(Comments, id=id)
+
+        counter = self.counter(id)
+        likes_queryset = Like.objects.likes().filter(comment=id)
+        dislikes_queryset = Like.objects.dislikes().filter(comment=id)
+
+        l_serialize = self.serializer_class(likes_queryset, many=True)
+        d_serialize = self.serializer_class(dislikes_queryset, many=True)
+
+        likes = json.loads(JSONRenderer().render(l_serialize.data))
+        dislikes = json.loads(JSONRenderer().render(d_serialize.data))
+
+        likes = {'likes': likes,
+                 'dislikes': dislikes,
+                 'count': counter}
+        return Response(likes, status=status.HTTP_200_OK)
+
+    def delete(self, request, id):
+        try:
+            like = Like.objects.get(user=request.user, comment=id)
+            like.delete()
+
+            return Response({
+                "message": "Comment like has been deleted"
+            }, status=status.HTTP_200_OK)
+        except Like.DoesNotExist:
+            return Response({
+                "error": "You have not liked this comment"
+            }, status=status.HTTP_404_NOT_FOUND)

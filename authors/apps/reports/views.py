@@ -65,21 +65,6 @@ class ReportsView(RetrieveAPIView):
         )
 
 
-class ReportActionView(CreateAPIView, DestroyAPIView):
-    permission_classes = (IsAdminUser, )
-    serializer_class = ReportArticleSerializer
-
-    def delete(self, request, id):
-        """ Delete report """
-
-        report = get_object_or_404(ReportArticle, id=id)
-        report.delete()
-        return Response(
-            {"detail": "Report has been deleted".format(id=id)},
-            status=status.HTTP_200_OK
-        )
-
-
 class FlagArticleView(APIView):
 
     permission_classes = (IsAdminUser, )

@@ -11,7 +11,6 @@ class ReportArticleTestCase(BaseTestCase):
         self.single_report_url = '/api/articles/report/{report_id}/'
         self.list_reports_url = '/api/articles/report/list/'
         self.flag_article_url = '/api/articles/report/{report_id}/flag/'
-        self.report_action_url = '/api/articles/report/{report_id}/action/'
         self.flagged_articles_url = '/api/articles/report/flag/'
         self.report_article = {
             "report": {
@@ -86,23 +85,6 @@ class ReportArticleTestCase(BaseTestCase):
         self.assertEqual(get_article.status_code,
                          status.HTTP_200_OK)
 
-    def test_delete_report(self):
-        """ test delete report """
-
-        report = self.post_report()
-        report_data = json.loads(report.content)
-        report_id = report_data['report']['id']
-        self.client.credentials()
-        self.client.credentials(
-            HTTP_AUTHORIZATION='Bearer ' + self.admin_credentials
-        )
-        delete_report = self.client.delete(
-            self.report_action_url.format(report_id=report_id)
-        )
-
-        self.assertEqual(delete_report.status_code,
-                         status.HTTP_200_OK)
-
     def test_flag_article(self):
         """ test flag article """
 
@@ -121,6 +103,21 @@ class ReportArticleTestCase(BaseTestCase):
         report_data = json.loads(report.content)
         report_id = report_data['report']['id']
         self.flag_report(report_id)
+        unflag_article = self.client.delete(
+            self.flag_article_url.format(report_id=report_id)
+        )
+
+        self.assertEqual(unflag_article.status_code, status.HTTP_200_OK)
+
+    def test_unflag_unflagged_article(self):
+        """ test unflag unflagged article """
+        report = self.post_report()
+        report_data = json.loads(report.content)
+        report_id = report_data['report']['id']
+        self.client.credentials()
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer ' + self.admin_credentials
+        )
         unflag_article = self.client.delete(
             self.flag_article_url.format(report_id=report_id)
         )

@@ -12,14 +12,14 @@ class UserListTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "PremierMember",
+                "username": "premiermember",
                 "password": "premiermember2019"
             }
         }
         self.user_2 = {
             "user": {
                 "email": "premiermember2@gmail.com",
-                "username": "PremierMember2",
+                "username": "premiermember2",
                 "password": "premiermember2019"
             }
         }
@@ -40,7 +40,7 @@ class UserListTestCase(APITestCase):
         self.assertEqual(user_list.status_code, status.HTTP_200_OK)
         self.assertEqual(data, json.loads(
             """[{"email":"premiermember@gmail.com",
-                "username":"PremierMember", "bio": "", "image": ""}
+                "username":"premiermember", "bio": "", "image": ""}
                 ]
             """))
 

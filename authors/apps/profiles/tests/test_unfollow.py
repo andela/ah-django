@@ -15,7 +15,7 @@ class RegistrationTestCase(APITestCase):
         self.user_1 = {
             "user": {
                 "email": "premiermember@gmail.com",
-                "username": "PremierMember",
+                "username": "premiermember",
                 "password": "premiermember2019"
             }
         }
@@ -28,7 +28,7 @@ class RegistrationTestCase(APITestCase):
         user_to_follow = {
             "user": {
                 "email": "premiermember2@gmail.com",
-                "username": "PremierMember2",
+                "username": "premiermember2",
                 "password": "premiermember2019"
             }
         }
@@ -57,7 +57,7 @@ class RegistrationTestCase(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(json.loads(res.content), {
-            "data": "You have successfully unfollowed PremierMember"
+            "data": "You have successfully unfollowed premiermember"
         })
         newres = self.client.get(
             "/api/users/{}/followers/".format(self.user["username"]))
@@ -76,7 +76,7 @@ class RegistrationTestCase(APITestCase):
 
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(json.loads(res.content), {
-            "error": "You had not followed PremierMember so cannot unfollow"
+            "error": "You had not followed premiermember so cannot unfollow"
         })
 
     def test_unfollow_non_existent_user(self):

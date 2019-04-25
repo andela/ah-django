@@ -44,7 +44,7 @@ class ProfileUpdateClass(BaseTestCase):
         user_2 = {
             "user": {
                 "email": "premiermemberanonymous@gmail.com",
-                "username": "PremierMember_Anonymous",
+                "username": "premiermember_anonymous",
                 "password": "premiermember2019"
             }
         }

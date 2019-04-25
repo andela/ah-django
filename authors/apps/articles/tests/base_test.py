@@ -73,6 +73,8 @@ class BaseTestCase(APITestCase):
 
         self.admin_credentials = json.loads(self.login_super_user.content)[
             "user"]["token"]
+        self.credentials_2 = json.loads(self.signup2.content)[
+            "user"]["token"]
         self.credentials = json.loads(self.signup.content)[
             "user"]["token"]
         self.client.credentials(

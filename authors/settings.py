@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'authors.apps.reports',
 
     'authors.apps.notifications',
+    'authors.apps.readstats',
 
     'oauth2_provider',
     'social_django',

@@ -21,6 +21,7 @@ from django.conf import settings
 
 from asgiref.sync import async_to_sync
 from authors.consumers import send_notification
+from authors.apps.readstats.models import ReadStats
 
 
 class ArticlesPagination(PageNumberPagination):
@@ -137,6 +138,21 @@ class SingleArticleView(RetrieveUpdateDestroyAPIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
         else:
+
+            if request.user.is_authenticated:
+                # Save read stats
+
+                stats = ReadStats.objects.filter(
+                    user=request.user, article=article)
+                if (stats):
+                    current_stats =stats[0].views
+                    stats[0].views= current_stats +1
+                    stats[0].save()
+
+                else:
+                    new_stats = ReadStats.objects.create(article=article, user=request.user, views=1)
+                    new_stats.save()
+
             return Response(
                 {"article": serializer.data}, status=status.HTTP_200_OK
             )
@@ -485,7 +501,7 @@ class ShareViaFacebookAndTwitter(CreateAPIView):
                 shared_link = facebook_url + article_link
 
             elif request.path == (
-                            '/api/articles/{}/share/twitter/'.format(slug)):
+                    '/api/articles/{}/share/twitter/'.format(slug)):
                 shared_link = twitter_url + article_link
 
             message = {

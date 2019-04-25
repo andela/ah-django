@@ -27,5 +27,6 @@ urlpatterns = [
     url(r'^api/', include('authors.apps.profiles.urls')),
     url(r'^api/', include('authors.apps.bookmarks.urls')),
     url(r'^api/', include('authors.apps.reports.urls')),
-    url(r'^api/', include('authors.apps.notifications.urls'))
+    url(r'^api/', include('authors.apps.notifications.urls')),
+    url(r'^api/', include('authors.apps.readstats.urls'))
 ]

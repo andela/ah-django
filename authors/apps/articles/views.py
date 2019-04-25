@@ -1,3 +1,5 @@
+import cloudinary
+import imghdr
 from rest_framework import generics, status, mixins, exceptions
 from rest_framework.permissions import (
     IsAuthenticated, IsAuthenticatedOrReadOnly,
@@ -16,7 +18,7 @@ from .exceptions import NoResultsMatch
 from .serializers import ArticleSerializer, RateArticleSerializer
 from ..core.permissions import IsOwnerOrReadOnly
 from authors.apps.stats.models import ReadStats
-
+from pathlib import Path
 
 def check_if_report_exists(Report, pk):
 
@@ -56,6 +58,18 @@ class NewArticle(APIView):
         article['slug'] = \
             slugify(article['title']) + "_" + request.user.username
         article['reading_time'] = self.calculate_read_time(article['body'])
+        try:
+            image_path = Path(article['image'])
+            if image_path.is_file() and imghdr.what(article['image']):
+                res = cloudinary.uploader.unsigned_upload(
+                    article['image'], 'dvyip3rs',
+                    public_id=article['slug'])
+                article['image'] = res['url']
+            else:
+                return Response({"error": "image not found"},
+                                status=status.HTTP_400_BAD_REQUEST)
+        except KeyError:
+            pass
         serializer = self.serializer_class(data=article)
         serializer.is_valid(raise_exception=True)
         serializer.save(author=request.user)

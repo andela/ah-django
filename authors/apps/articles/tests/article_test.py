@@ -1,3 +1,5 @@
+import cloudinary
+
 from rest_framework import status
 from django.urls import reverse
 from ...authentication.tests.base_test import BaseTestCase
@@ -37,9 +39,10 @@ class TestNewArticle(BaseTestCase):
         """
         new_article = {
             "article": {
-                "title": "How to train your dragon",
+                "title": "test",
                 "description": "Ever wonder how?",
                 "body": "It takes a Jacobian",
+                "image": "andela.png",
                 "tagList": [
                     "dragons",
                     "training"
@@ -54,6 +57,32 @@ class TestNewArticle(BaseTestCase):
                                     new_article, HTTP_AUTHORIZATION=auth,
                                     format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        cloudinary.uploader.destroy('ah-django/test_testguy99')
+
+    def test_create_new_with_invalid_image(self):
+        """
+        create new article successfuly
+        """
+        new_article = {
+            "article": {
+                "title": "How to train your dragon",
+                "description": "Ever wonder how?",
+                "body": "It takes a Jacobian",
+                "image": "no-such-image.png",
+                "tagList": [
+                    "dragons",
+                    "training"
+                ]
+            }
+        }
+
+        payload = utils.jwt_payload_handler(self.testuser)
+        token = utils.jwt_encode_handler(payload)
+        auth = 'Bearer {0}'.format(token)
+        response = self.client.post(self.new_article_path,
+                                    new_article, HTTP_AUTHORIZATION=auth,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class ArticleDetails(BaseTestCase):

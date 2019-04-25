@@ -26,6 +26,7 @@ class Article(models.Model):
     reading_time = models.CharField(blank=True, null=True, max_length=100)
     reads = models.PositiveIntegerField(default=0)
     views = models.PositiveIntegerField(default=0)
+    image = models.URLField(blank=True, null=True)
 
     class Meta:
         ordering = ["-id"]

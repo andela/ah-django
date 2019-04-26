@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (ReportArticleView, ListReportView,
                     ReportsView, FlagArticleView,
-                    FlaggedArticlesView)
+                    FlaggedArticlesView, ReportActionView)
 
 urlpatterns = [
     path('articles/<article_slug>/report/',
@@ -16,6 +16,8 @@ urlpatterns = [
     path('articles/report/list/',
          ListReportView.as_view(), name="list-reports"),
 
+    path('articles/report/<int:id>/action/',
+         ReportActionView.as_view(), name="take-action-reports"),
     path('articles/report/<int:id>/flag/',
          FlagArticleView.as_view(), name="flag-article"),
 

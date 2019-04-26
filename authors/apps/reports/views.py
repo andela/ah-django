@@ -132,6 +132,17 @@ class FlagArticleView(APIView):
         )
 
 
+class ReportActionView(CreateAPIView, DestroyAPIView):
+    serializer_class = ReportArticleSerializer
+
+    def delete(self, request, id):
+        """ Delete report """
+        return Response(
+            {"detail": "You are not allowed to perform this action."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED
+        )
+
+
 class FlaggedArticlesView(ListAPIView):
     serializer_class = ArticlesSerializer
     permission_classes = (IsAdminUser, )

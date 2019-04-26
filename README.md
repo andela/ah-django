@@ -1,3 +1,6 @@
+[![Coverage Status](https://coveralls.io/repos/github/deferral/ah-django/badge.svg?branch=develop)](https://coveralls.io/github/deferral/ah-django?branch=develop)
+[![Build Status](https://travis-ci.com/deferral/ah-django.svg?branch=develop)](https://travis-ci.com/deferral/ah-django)
+
 Authors Haven - A Social platform for the creative at heart.
 =======
 
@@ -45,6 +48,7 @@ The preferred JSON object to be returned by the API should be structured as foll
     "tagList": ["dragons", "training"],
     "createdAt": "2016-02-18T03:22:56.637Z",
     "updatedAt": "2016-02-18T03:48:35.824Z",
+    "rating": 3.5
     "favorited": false,
     "favoritesCount": 0,
     "author": {

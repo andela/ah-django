@@ -13,12 +13,54 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 from django.conf.urls import include, url
 from django.contrib import admin
 
+SchemaView = get_schema_view(
+    openapi.Info(
+        title="Authors Haven API, Team Deffered",
+        default_version='v1',
+        description="A Platform for the Creative at Heart",
+        terms_of_service="https://www.andela.com",
+        contact=openapi.Contact(email="deffered@andela.com"),
+        license=openapi.License(name="MIT License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-
-    url(r'^api/', include('authors.apps.authentication.urls', namespace='authentication')),
+    url(r'^apidocs$',
+        SchemaView.with_ui(
+            'swagger', cache_timeout=0), name='schema-swagger-ui'),
+    url(r'api/', include(
+        ('authors.apps.reactions.urls', 'reactions'), namespace='reactions')),
+    url(r'api/', include(
+        ('authors.apps.articles.urls', 'articles'), namespace='articles')),
+    url(r'api/', include(
+        ('authors.apps.comments.urls', 'comments'), namespace='comments')),
+    url(r'api/', include((
+        'authors.apps.authentication.urls', 'authentication'),
+        namespace='authentication')),
+    url(r'api/', include(
+        ('authors.apps.profiles.urls', 'profiles'), namespace='profiles')),
+    url(r'api/', include(('authors.apps.followers.urls',
+                          'followers'), namespace='followers')),
+    url(r'api/', include(('authors.apps.favorites.urls',
+                          'favorites'), namespace='favorites')),
+    url(r'api/notifications/', include((
+        'authors.apps.notifications.urls',
+        'notifications'),
+        namespace='notifications')),
+    url(r'api/', include(('authors.apps.bookmark.urls',
+                          'bookmark'), namespace='bookmark')),
+    url(r'api/', include((
+        'authors.apps.stats.urls', 'reader_stats'),
+        namespace='reader_stats')),
+    url(r'api/', include(('authors.apps.highlights.urls',
+                          'highlights'), namespace='highlights')),
 ]
-

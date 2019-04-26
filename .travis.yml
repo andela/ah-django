@@ -1,0 +1,28 @@
+language: python
+python:
+  - 3.6
+cache: pip
+
+# install dependancies
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
+  - pip install coverage
+
+services:
+  - postgresql
+  - redis-server
+
+addons:
+  postgresql: "9.4"
+
+before_script:
+  - psql -c 'create database djangodb;' -U postgres
+  - python manage.py makemigrations
+  - python manage.py migrate
+
+script:
+  - coverage run --source='.' -m pytest auth*/apps/  && coverage report -m
+
+after_success:
+  - coveralls

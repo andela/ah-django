@@ -43,7 +43,7 @@ htmlcov/
 .cache
 nosetests.xml
 coverage.xml
-*,cover
+*, cover
 .hypothesis/
 
 # Translations
@@ -78,6 +78,7 @@ celerybeat-schedule
 
 # dotenv
 .env
+!.env_sample
 
 # virtualenv
 venv/
@@ -91,3 +92,12 @@ ENV/
 
 # SQLite3
 db.sqlite3
+
+.coverage
+
+# vscode
+.vscode
+
+# Migrations
+#*migrations
+*000*

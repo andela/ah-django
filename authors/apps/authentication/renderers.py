@@ -1,6 +1,7 @@
 import json
 
 from rest_framework.renderers import JSONRenderer
+from ..reactions.renderers import ReactionRenderer
 
 
 class UserJSONRenderer(JSONRenderer):
@@ -18,8 +19,11 @@ class UserJSONRenderer(JSONRenderer):
             # rendering errors.
             return super(UserJSONRenderer, self).render(data)
 
-
         # Finally, we can render our data under the "user" namespace.
         return json.dumps({
             'user': data
         })
+
+
+class AccountActivationRenderer(ReactionRenderer):
+    name = 'verification'

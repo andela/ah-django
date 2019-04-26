@@ -1,3 +1,4 @@
+""" Module for the url patters for highlights """
 from django.conf.urls import url
 from .views import (HighlightApiList, HighlightApiView,)
 

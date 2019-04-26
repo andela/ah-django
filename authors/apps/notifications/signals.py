@@ -1,10 +1,12 @@
 """ This module generates notifications for different activities """
 from notifications.signals import notify
 from notifications.models import Notification
+from asgiref.sync import async_to_sync
 from django.db.models.signals import post_save
 from authors.apps.followers.models import Follow
 from authors.apps.authentication.models import User
 from ..core.mail import mail_helper
+from authors.apps.notifications.consumers import NotificationConsumer
 
 
 def article_created(instance, created, **kwargs):
@@ -36,6 +38,14 @@ def commented_on(instance, created, **kwargs):
                     ))
 
 
+def send_to_socket(user, message):
+    """
+    consolidates the message to send
+     """
+    async_to_sync(NotificationConsumer.send_socket_notification)(
+        {'send_to': [user], 'message': message})
+
+
 def email_notification(instance, created, **kwargs):
     """ sends an email notification for notifications """
 
@@ -59,6 +69,7 @@ def email_notification(instance, created, **kwargs):
                         'description': instance.description
                     }
                 )
+            send_to_socket(recipient.username, instance.description)
 
 
 post_save.connect(email_notification, sender=Notification)

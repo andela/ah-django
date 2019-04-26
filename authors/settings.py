@@ -29,6 +29,7 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -287,6 +288,16 @@ SWAGGER_SETTINGS = {
             'type': 'apiKey',
             'name': 'Authorization',
             'in': 'header'
+        }
+    }
+}
+
+ASGI_APPLICATION = "authors.routing.application"
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
         }
     }
 }

@@ -59,6 +59,12 @@ class TestNewArticle(BaseTestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         cloudinary.uploader.destroy('ah-django/test_testguy99')
 
+        # run again to test duplicate returns 409
+        response = self.client.post(self.new_article_path,
+                                    new_article, HTTP_AUTHORIZATION=auth,
+                                    format='json')
+        self.assertEqual(response.status_code, status.HTTP_409_CONFLICT)
+
     def test_create_new_with_invalid_image(self):
         """
         create new article successfuly

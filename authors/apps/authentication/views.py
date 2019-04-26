@@ -59,6 +59,21 @@ class RegistrationAPIView(APIView):
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
 
+        try:
+            if User.objects.get(email=user['email']):
+                return Response({"error": "a user with that email exists"},
+                                status.HTTP_409_CONFLICT)
+        except User.DoesNotExist:
+            pass
+
+        try:
+            if User.objects.get(username=user['username']):
+                return Response({"error": "a user with that username "
+                                          "exists"},
+                                status.HTTP_409_CONFLICT)
+        except User.DoesNotExist:
+            pass
+
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()

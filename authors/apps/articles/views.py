@@ -64,6 +64,12 @@ class NewArticle(APIView):
         article = request.data.get('article', {})
         article['slug'] = \
             slugify(article['title']) + "_" + request.user.username
+        try:
+            Article.objects.get(slug=article['slug'])
+            return Response({"error": "an article with that slug exists"},
+                            status.HTTP_409_CONFLICT)
+        except Article.DoesNotExist:
+            pass
         article['reading_time'] = self.calculate_read_time(article['body'])
         try:
             image_path = Path(article['image'])

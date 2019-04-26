@@ -22,6 +22,8 @@ from django.conf import settings
 from asgiref.sync import async_to_sync
 from authors.consumers import send_notification
 from authors.apps.readstats.models import ReadStats
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 
 class ArticlesPagination(PageNumberPagination):
@@ -124,7 +126,8 @@ class SingleArticleView(RetrieveUpdateDestroyAPIView):
 
     def get(self, request, slug):
         article = get_object_or_404(Articles, slug=slug)
-        serializer = self.serializer_class(article)
+        serializer = self.serializer_class(
+            article, context={"request": request})
         if article.flag != "":
             if article.author == (
                     self.request.user or self.request.user.is_superuser):
@@ -145,12 +148,13 @@ class SingleArticleView(RetrieveUpdateDestroyAPIView):
                 stats = ReadStats.objects.filter(
                     user=request.user, article=article)
                 if (stats):
-                    current_stats =stats[0].views
-                    stats[0].views= current_stats +1
+                    current_stats = stats[0].views
+                    stats[0].views = current_stats + 1
                     stats[0].save()
 
                 else:
-                    new_stats = ReadStats.objects.create(article=article, user=request.user, views=1)
+                    new_stats = ReadStats.objects.create(
+                        article=article, user=request.user, views=1)
                     new_stats.save()
 
             return Response(
@@ -198,7 +202,8 @@ class RatingView(CreateAPIView, ListAPIView):
             article_id = {"article_id": article_id}
             rating.update(article_id)
             serializer = self.serializer_class(
-                data=rating
+                data=rating, context={'request': request}
+
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -219,7 +224,15 @@ class LikeView(APIView):
     permission_classes = (IsAuthenticated,)
     queryset = None
     serializer_class = LikesSerializer
+    # swagger docs code
+    action_props = {"action": {"type": "string"}}
+    action_schema = openapi.Schema(
+        title='likes', description="Actions", properties=action_props,
+        type=openapi.TYPE_OBJECT)
 
+    @swagger_auto_schema(request_body=action_schema,
+                         operation_description="Like, dislike an article ",
+                         )  # end swagger docs code
     def post(self, request, slug, *args, **kwargs):
         """Like
         Arguments:
@@ -413,13 +426,19 @@ class FavouritesView(APIView):
             )
 
 
-class ShareViaEmail(CreateAPIView):
+class ShareViaEmail(APIView):
     """
         Share Articles via email
     """
     permission_classes = (IsAuthenticated,)
     lookup_field = 'slug'
+    # swagger docs code
+    email_props = {"email": {"type": "string"}}
+    share_schema = openapi.Schema(
+        title='Share',  properties=email_props,
+        type=openapi.TYPE_OBJECT)
 
+    @swagger_auto_schema(request_body=share_schema)  # end swagger docs code
     def post(self, request, slug):
         """
             POST a request to /api/articles/<slug>/share/email/
@@ -475,7 +494,7 @@ class ShareViaEmail(CreateAPIView):
                             status=status.HTTP_404_NOT_FOUND)
 
 
-class ShareViaFacebookAndTwitter(CreateAPIView):
+class ShareViaFacebookAndTwitter(APIView):
     """
         Share Articles via facebook or twitter
     """

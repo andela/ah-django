@@ -60,6 +60,9 @@ INSTALLED_APPS = [
     'social_django',
     'rest_framework_social_oauth2',
     'channels',
+    'rest_framework_swagger',
+    'drf_yasg',
+
 ]
 
 MIDDLEWARE = [
@@ -289,3 +292,14 @@ SOCIAL_AUTH_ALLOWED_REDIRECT_URIS = '/oauth/complete/twitter/'
 
 django_heroku.settings(locals())
 SOCIAL_AUTH_CLEAN_USERNAMES = True
+
+SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
+}

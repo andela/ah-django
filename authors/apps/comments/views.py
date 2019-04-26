@@ -1,3 +1,5 @@
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework.generics import (CreateAPIView, RetrieveAPIView,
                                      ListAPIView, RetrieveUpdateDestroyAPIView)
 from rest_framework.response import Response
@@ -145,7 +147,15 @@ class LikeView(CreateAPIView):
                  'dislikes': dislikesCount,
                  'total': likesCount+dislikesCount}
         return count
+    # swagger docs code
+    action_props = {"action": {"type": "string"}}
+    action_schema = openapi.Schema(
+        title='likes', description="Actions", properties=action_props,
+        type=openapi.TYPE_OBJECT)
 
+    @swagger_auto_schema(request_body=action_schema,
+                         operation_description="Like, dislike a Comment ",
+                         )  # end swagger docs code
     def post(self, request, id):
         """
         Post a like/dislike

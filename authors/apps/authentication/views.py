@@ -25,6 +25,7 @@ from requests.exceptions import HTTPError
 from social_django.utils import load_strategy, load_backend
 from social_core.backends.oauth import BaseOAuth2, BaseOAuth1
 from social_core.exceptions import MissingBackend, AuthForbidden
+from drf_yasg.utils import swagger_auto_schema
 
 
 class RegistrationAPIView(APIView):
@@ -33,12 +34,19 @@ class RegistrationAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = RegistrationSerializer
 
+    @swagger_auto_schema(
+        response={status.HTTP_200_OK: RegistrationSerializer},
+        request_body=RegistrationSerializer
+    )
     def post(self, request):
         user = request.data.get('user', {})
 
         # The create serializer, validate serializer, save serializer pattern
         # below is common and you will see it a lot throughout this course and
         # your own work later on. Get familiar with it.
+        username = user.get('username', None)
+        if username is not None:
+            user['username'] = user['username'].lower()
         serializer = self.serializer_class(data=user)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -77,6 +85,10 @@ class LoginAPIView(APIView):
     renderer_classes = (UserJSONRenderer,)
     serializer_class = LoginSerializer
 
+    @swagger_auto_schema(
+        response={status.HTTP_200_OK: LoginSerializer},
+        request_body=LoginSerializer
+    )
     def post(self, request):
         user = request.data.get('user', {})
 
@@ -194,6 +206,7 @@ class ResetPasswordConfirmView(generics.UpdateAPIView):
     patch:
     Confirming a user's reset password.
     """
+    serializer_class = UserSerializer
 
     def partial_update(self, request, pk=None):
         uid = self.request.query_params.get('uid')

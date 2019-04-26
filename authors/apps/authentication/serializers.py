@@ -30,7 +30,6 @@ class RegistrationSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         max_length=27,
         validators=[
-            alphanumericusername,
             UniqueValidator(
                 queryset=User.objects.all(),
                 message='user with this username already exists.',
@@ -112,6 +111,10 @@ class LoginSerializer(serializers.Serializer):
             'bio': user.bio,
             'image': user.image
         }
+
+    class Meta:
+        model = User
+        fields = ('email', 'password')
 
 
 class UserSerializer(serializers.ModelSerializer):

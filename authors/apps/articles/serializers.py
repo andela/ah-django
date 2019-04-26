@@ -4,6 +4,7 @@ from django.db.models import Avg
 from authors.apps.authentication.serializers import UserSerializer
 from authors.apps.profiles.serializers import ProfileSerializer
 import readtime
+from drf_yasg.utils import swagger_serializer_method
 
 
 class ArticlesSerializer(serializers.ModelSerializer):
@@ -44,11 +45,11 @@ class ArticlesSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         return Articles.objects.create(**validated_data)
 
-    def get_rating_count(self, obj):
+    def get_rating_count(self, obj=object):
         qs = Rating.objects.filter(article_id=obj.id).count()
         return qs
 
-    def get_avg_rating(self, obj):
+    def get_avg_rating(self, obj=object):
         qs = Rating.objects.filter(article_id=obj.id).aggregate(Avg('rating'))
         if qs['rating__avg'] is None:
             return 0

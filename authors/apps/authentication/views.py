@@ -46,8 +46,8 @@ class RegistrationAPIView(APIView):
     serializer_class = RegistrationSerializer
 
     @swagger_auto_schema(
-        query_serializer=LoginSerializer,
-        response={status.HTTP_200_OK: LoginSerializer}
+        request_body=RegistrationSerializer,
+        response={status.HTTP_200_OK: RegistrationSerializer}
     )
     def post(self, request):
         """
@@ -107,7 +107,7 @@ class LoginAPIView(APIView):
     serializer_class = LoginSerializer
 
     @swagger_auto_schema(
-        query_serializer=LoginSerializer,
+        request_body=LoginSerializer,
         response={status.HTTP_200_OK: LoginSerializer}
     )
     def post(self, request):
@@ -202,6 +202,10 @@ class ForgotPasswordAPIview(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ForgotPasswordSerializer
 
+    @swagger_auto_schema(
+        request_body=ForgotPasswordSerializer,
+        response={status.HTTP_200_OK: ForgotPasswordSerializer}
+    )
     def post(self, request):
         email = request.data.get('email')
         user = User.objects.filter(email=email).first()
@@ -250,6 +254,10 @@ class ResetPasswordAPIView(APIView):
     permission_classes = (AllowAny,)
     serializer_class = ResetPasswordSerializer
 
+    @swagger_auto_schema(
+        request_body=ResetPasswordSerializer,
+        response={status.HTTP_200_OK: ResetPasswordSerializer}
+    )
     def put(self, request, *args, **kwargs):
         data = request.data
         token = self.kwargs.get('token')

@@ -9,6 +9,7 @@ from .serializers import (
     ProfileSerializer, UpdateProfileSerializer)
 from rest_framework.generics import (
         UpdateAPIView)
+from ..core.serializers import CommonSerializer
 
 
 class ProfileListApi(APIView):
@@ -20,6 +21,7 @@ class ProfileListApi(APIView):
 
     permission_classes = (IsAuthenticated,)
     renderer_classes = (ProfileJsonRenderer,)
+    serializer_class = CommonSerializer
 
     def get(self, request, format=None):
         """

@@ -19,6 +19,9 @@ from .serializers import ArticleSerializer, RateArticleSerializer
 from ..core.permissions import IsOwnerOrReadOnly
 from authors.apps.stats.models import ReadStats
 from pathlib import Path
+from drf_yasg.utils import swagger_auto_schema
+from ..core.serializers import CommonSerializer
+
 
 def check_if_report_exists(Report, pk):
 
@@ -50,6 +53,10 @@ class NewArticle(APIView):
             return reading_time
         return str(reading_time) + " minutes"
 
+    @swagger_auto_schema(
+        request_body=ArticleSerializer,
+        response={status.HTTP_200_OK: ArticleSerializer}
+    )
     def post(self, request):
         """
             Creates a new article with the details provided
@@ -304,6 +311,8 @@ class ReadArticleView(generics.CreateAPIView):
         Sends requests to update article `read` stats
     """
 
+    serializer_class = CommonSerializer
+
     def post(self, request, slug):
         """
             Adds a READ to an article
@@ -327,6 +336,10 @@ class ReportArticleView(generics.GenericAPIView):
     permission_classes = (IsAuthenticated, )
     serializer_class = ReportSerializer
 
+    @swagger_auto_schema(
+        request_body=ReportSerializer,
+        response={status.HTTP_200_OK: ReportSerializer}
+    )
     def post(self, request, slug):
         invalid_string = "Message is not a valid string"
         try:
@@ -335,7 +348,7 @@ class ReportArticleView(generics.GenericAPIView):
             return Response({
                 'error': f'Aricles with slug {slug} nonexistent'
             },
-                status_=status.HTTP_404_NOT_FOUND)
+                status.HTTP_404_NOT_FOUND)
         new_text = str(request.data.get('message', '')).strip()
         if not new_text:
             return Response({
@@ -350,7 +363,7 @@ class ReportArticleView(generics.GenericAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-class ReportList(generics.ListCreateAPIView):
+class ReportList(generics.ListAPIView):
     """
     Return all reports for admin.
     """
@@ -363,12 +376,14 @@ class ReportList(generics.ListCreateAPIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ReportAPIViews(generics.GenericAPIView):
+class ReportAPIViews(generics.RetrieveAPIView, mixins.UpdateModelMixin,
+                     generics.GenericAPIView, mixins.DestroyModelMixin):
     """
     Functions used by admin to handle reports
     """
     permission_classes = (IsAdminUser, )
     serializer_class = ReportSerializer
+    queryset = Report.objects.all()
 
     def get(self, request, pk):
         query = check_if_report_exists(Report, pk)

@@ -5,6 +5,7 @@ from .models import BookmarkArticle
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import exceptions, generics
+from ..core.serializers import CommonSerializer
 
 
 class BookmarkAPIView(generics.GenericAPIView):
@@ -53,6 +54,8 @@ class BookmarkAPIView(generics.GenericAPIView):
 
 class BookmarkListAPIView(ListAPIView):
     """ Retrieve all bookmarked articles"""
+
+    serializer_class = CommonSerializer
 
     def list(self, request):
         """ method to verify bookmark status """

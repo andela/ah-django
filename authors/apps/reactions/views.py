@@ -12,6 +12,7 @@ from .renderers import ReactionRenderer
 from authors.apps.articles.models import Article
 from authors.apps.comments.views import CommentAPIView, ArticleInst
 from .helpers import dislikeReaction
+from ..core.serializers import CommonSerializer
 
 
 class UserReactionView(CreateAPIView):
@@ -24,6 +25,7 @@ class UserReactionView(CreateAPIView):
     model = None
     permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (ReactionRenderer,)
+    serializer_class = CommonSerializer
 
     def post(self, request, slug):
         """
@@ -65,6 +67,7 @@ class CommentsLikeReactionAPIView(CreateAPIView):
     model = None
     permission_classes = (IsAuthenticatedOrReadOnly,)
     renderer_classes = (ReactionRenderer,)
+    serializer_class = CommonSerializer
 
     def post(self, request, slug, id):
         article = ArticleInst.fetch(slug)

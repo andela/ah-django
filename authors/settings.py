@@ -166,7 +166,7 @@ DRFSO2_URL_NAMESPACE = ''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        "CONN_MAX_AGE": 0
+        "CONN_MAX_AGE": 0,
     }
 }
 

@@ -166,7 +166,7 @@ DRFSO2_URL_NAMESPACE = ''
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        "CONN_MAX_AGE": 0
+        "CONN_MAX_AGE": 0,
     }
 }
 
@@ -211,7 +211,12 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-CORS_ORIGIN_ALLOW_ALL = True
+CORS_ORIGIN_WHITELIST = (
+    '0.0.0.0:4000',
+    'localhost:4000',
+    'https://ah-fortem-staging.herokuapp.com',
+)
+
 
 # Tell Django about the custom `User` model we created. The string
 # `authentication.User` tells Django we are referring to the `User` model in

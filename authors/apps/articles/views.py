@@ -77,7 +77,7 @@ class CreateArticleView(CreateAPIView, ListAPIView, PageNumberPagination):
 
         page_size = request.GET.get('page_size')
         if page_size is None:
-            page_size = 10
+            page_size = 12
 
         pagination.PageNumberPagination.page_size = page_size
 

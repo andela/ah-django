@@ -461,9 +461,15 @@ class ShareViaEmail(APIView):
             username = request.user.username
 
             # format the email
-            host = request.get_host()
-            protocol = request.scheme
-            shared_link = protocol + '://' + host + '/api/articles/' + slug
+            # host = request.get_host()
+            # protocol = request.scheme
+            # shared_link = protocol + '://' + host + '/api/articles/' + slug
+            try:
+                host = self.request.META['HTTP_ORIGIN']
+            except KeyError:
+                host = self.request.scheme + '://' + self.request.get_host()
+
+            shared_link = host + '/api/articles/' + slug
             subject = "Authors Haven"
             article_title = slug
             message = render_to_string(

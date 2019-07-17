@@ -238,8 +238,8 @@ REST_FRAMEWORK = {
 FROM_EMAIL = 'no-reply@authorshaven.com'
 
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': ('{protocol}//:{domain}/'
-                                   'api/users/password-reset-confirm/'
+    'PASSWORD_RESET_CONFIRM_URL': ('{host}/'
+                                   'password-reset-confirm/'
                                    '?uid={uid}&token={token}'),
     'SET_PASSWORD_RETYPE': True,
     'PASSWORD_RESET_CONFIRM_RETYPE': True,

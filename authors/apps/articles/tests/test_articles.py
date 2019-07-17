@@ -307,7 +307,7 @@ class CURDArticlesTestCase(APITestCase):
         data = json.loads(response.content.decode('utf-8'))
         self.assertEqual(response.status_code,
                          status.HTTP_200_OK)
-        self.assertEqual(len(data["articles"]), 10)
+        self.assertEqual(len(data["articles"]), 12)
 
     def test_filtered_article(self):
         """Test filtering articles"""

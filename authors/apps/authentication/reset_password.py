@@ -1,5 +1,3 @@
-from django.conf import settings
-from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import render_to_string
 
 from djoser.conf import settings as dj_settings
@@ -43,18 +41,14 @@ class RecoverPassword:
         reset_link = dj_settings.PASSWORD_RESET_CONFIRM_URL.format(**context)
 
         user = context['user']
-        message = """
-            Hi {username},
-            Someone (hopefully you) has requested to reset your
-            Authors Haven Password.
-            Follow the link below to reset your password:
-            {reset_link}
-            If you do not wish to reset your password, disregard this
-            message and
-            no action will be taken
-            Regards,
-            Authors Haven team
-        """.format(username=user, reset_link=reset_link)
+        username = user
+        message = render_to_string(
+            'password_reset.html', {
+                'username': str(username),
+                'reset_link': reset_link
+            }
+        )
         subject = "Reset password your Authors Haven password"
-        email = Email(subject=subject, message=message, to_email=to_email)
+        email = Email(subject=subject, message=message, html_message=message,
+                      to_email=to_email)
         email.send()

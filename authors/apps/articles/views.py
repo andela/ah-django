@@ -195,17 +195,29 @@ class RatingView(CreateAPIView, ListAPIView):
     serializer_class = RatingSerializer
 
     def post(self, request, article_id, *args, **kwargs):
-        rating = get_object_or_404(Articles, id=article_id)
+        article = get_object_or_404(Articles, id=article_id)
         if request.user.is_authenticated:
             rating = request.data.get('rating', {})
             user_id = {"user_id": request.user.id}
             rating.update(user_id)
             article_id = {"article_id": article_id}
             rating.update(article_id)
-            serializer = self.serializer_class(
-                data=rating, context={'request': request}
+            print(rating)
 
-            )
+            try:
+                myRating = Rating.objects.filter(
+                    article_id=article, user_id=request.user).first()
+                serializer = self.serializer_class(myRating,
+                                                   data=rating, context={
+                                                       'request': request}
+                                                   )
+
+            except ObjectDoesNotExist:
+                serializer = self.serializer_class(
+                    data=rating, context={'request': request}
+
+                )
+
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -216,6 +228,23 @@ class RatingView(CreateAPIView, ListAPIView):
                     "error": "Please login"
                 }, status=status.HTTP_403_FORBIDDEN
             )
+
+    def get(self, request, article_id, *args, **kwargs):
+        try:
+            myRating = Rating.objects.filter(
+                article_id=article_id, user_id=request.user).first()
+            serializer = self.serializer_class(myRating)
+        except ObjectDoesNotExist:
+            rating = {
+                "id": 0,
+                "article_id": article_id,
+                "user_id": request.user.id,
+                "rating": 0
+            }
+            serializer = self.serializer_class(
+                data=rating, context={'request': request})
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class LikeView(APIView):
@@ -478,7 +507,7 @@ class ShareViaEmail(APIView):
             except KeyError:
                 host = self.request.scheme + '://' + self.request.get_host()
                 shared_link = host + '/api/articles/' + slug
-                
+
             subject = "Authors Haven"
             article_title = slug
             message = render_to_string(

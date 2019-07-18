@@ -24,6 +24,7 @@ from authors.consumers import send_notification
 from authors.apps.readstats.models import ReadStats
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class ArticlesPagination(PageNumberPagination):
@@ -268,14 +269,14 @@ class LikeView(APIView):
             return Response({'Errors': 'Something went wrong'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         articleS = ArticlesSerializer(instance=article)
-        count = self.countLikes(article_id)
+        count = self.countLikes(article_id, request.user)
         return Response(count, status=status.HTTP_200_OK)
 
     def get(self, request, slug, type=None, *args, **kwargs):
         article = get_object_or_404(Articles, slug=slug)
         article_id = article.pk
 
-        count = self.countLikes(article_id)
+        count = self.countLikes(article_id, request.user)
         if type == 'count':
 
             return Response(count, status=status.HTTP_200_OK)
@@ -303,17 +304,24 @@ class LikeView(APIView):
             return Response({'Errors': 'You have not liked this Article'},
                             status=status.HTTP_404_NOT_FOUND)
 
-        count = self.countLikes(article_id)
+        count = self.countLikes(article_id, request.user)
         return Response(count, status=status.HTTP_200_OK)
 
-    def countLikes(self, article_id):
+    def countLikes(self, article_id, user):
         self.l_queryset = Likes.objects.likes().filter(article=article_id)
         self.d_queryset = Likes.objects.dislikes().filter(article=article_id)
+        try:
+            like = Likes.objects.get(user=user, article=article_id)
+            userLike = "like" if like.like == 1 else "dislike"
+        except ObjectDoesNotExist:
+            userLike = None
+
         likesCount = self.l_queryset.count()
         dislikesCount = self.d_queryset.count()
         count = {'likes': likesCount,
                  'dislikes': dislikesCount,
-                 'total': likesCount+dislikesCount}
+                 'total': likesCount+dislikesCount,
+                 'user': userLike}
         return count
 
 
